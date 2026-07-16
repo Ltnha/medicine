@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bảng điều hành Nhà Máy - Sản xuất</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fa-solid fa-industry me-2"></i> CỔNG ĐIỀU HÀNH NHÀ MÁY SẢN XUẤT</a>
+            <a href="khachhang.html" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Trang khách</a>
+        </div>
+    </nav>
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white text-success font-weight-bold">
+                        <i class="fa-solid fa-square-plus me-2"></i> KHỞI TẠO LÔ THUỐC MỚI LÊN BLOCKCHAIN
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3 p-3 bg-light rounded">
+                            <label class="form-label font-weight-bold">Nhập thông tin ID lô thuốc mới:</label>
+                            <input type="text" id="inputDrugId" class="form-control mb-2" placeholder="Ví dụ: DRUG_2026_001">
+                            <button class="btn btn-success w-100" onclick="createDrug()">
+                                <i class="fa-solid fa-plus me-1"></i> Khởi tạo dữ liệu gốc & Tạo mã QR sản phẩm (On-chain mạng Sepolia)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const contractABI = [
+            { "inputs": [{ "internalType": "string", "name": "_id", "type": "string" }], "name": "checkDrug", "outputs": [{ "internalType": "bool", "name": "isInitialized", "type": "bool" }, { "components": [{ "internalType": "enum DrugTracker.DrugStatus", "name": "status", "type": "uint8" }, { "internalType": "uint256", "name": "timestamp", "type": "uint256" }, { "internalType": "address", "name": "updatedBy", "type": "address" }], "internalType": "struct DrugTracker.TrackingStep[]", "name": "history", "type": "tuple[]" }], "stateMutability": "view", "type": "function" },
+            { "inputs": [{ "internalType": "string", "name": "_id", "type": "string" }], "name": "createDrug", "outputs": [], "stateMutability": "nonpayable", "type": "function" }
+        ];
+        let web3; let walletAddress = ""; let myContract;
+        const CONTRACT_ADDRESS = "0x9237c8505195f2f82f89991776355e949Ba63d68";
+
+        async function initWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                myContract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                walletAddress = accounts[0];
+                return true;
+            }
+            alert("Vui lòng kích hoạt MetaMask.");
+            return false;
+        }
+
+        async function createDrug() {
+            let id = document.getElementById('inputDrugId').value.trim();
+            if(!id) return alert("Vui lòng nhập ID thuốc!");
+            const initialized = await initWeb3();
+            if(!initialized) return;
+
+            try {
+                const result = await myContract.methods.checkDrug(id).call();
+                if(result[0]) return alert("Lỗi: ID này đã tồn tại trên Blockchain mạng Sepolia!");
+                
+                alert("Đang gửi yêu cầu tạo lô sản xuất... Xác nhận phí Gas trên MetaMask.");
+                await myContract.methods.createDrug(id).send({ from: walletAddress });
+                alert(`[Blockchain] Khởi tạo thành công ID lô: ${id}`);
+                document.getElementById('inputDrugId').value = "";
+            } catch (error) {
+                alert("Giao dịch thất bại! Lỗi: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
