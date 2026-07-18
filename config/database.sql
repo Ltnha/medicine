@@ -21,3 +21,9 @@ CREATE TABLE LoThuoc (
         REFERENCES Thuoc(id_thuoc) 
         ON DELETE CASCADE -- Nếu xóa thuốc, các lô liên quan sẽ tự động xóa theo
 );
+
+CREATE TABLE `admin` (
+    `ma_admin` INT AUTO_INCREMENT PRIMARY KEY,
+    `ma_vi` VARCHAR(42) NOT NULL UNIQUE,
+    `role` ENUM('Admin') NOT NULL DEFAULT 'Admin'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
