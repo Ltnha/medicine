@@ -80,9 +80,16 @@ try {
     $stmt->execute([strtolower($address)]);
     $admin = $stmt->fetch();
 
+    //Kiểm tra tồn tại tài khoản admin và quyền hạn
     if (!$admin) {
         http_response_code(401);
         echo json_encode(['error' => 'Địa chỉ ví này không có quyền quản trị hoặc đã bị vô hiệu hóa!']);
+        exit;
+    }
+
+    if (empty($admin['role']) || strtolower($admin['role']) !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Tài khoản của bạn không có vai trò Quản trị viên (Admin)!']);
         exit;
     }
 

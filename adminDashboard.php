@@ -2,7 +2,7 @@
 // adminDashboard.php
 // Chặn truy cập nếu chưa đăng nhập, và lấy sẵn thông tin ví từ session để hiển thị.
 session_start();
-if (empty($_SESSION['admin_id'])) {
+if (empty($_SESSION['admin_id']) || empty($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header('Location: login.php');
     exit;
 }

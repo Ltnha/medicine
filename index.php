@@ -20,7 +20,6 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
 
-    <!-- Header điều hướng -->
     <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -42,10 +41,8 @@
         </div>
     </header>
 
-    <!-- Toàn bộ nội dung giới thiệu hoành tráng -->
     <main class="flex-grow w-full">
         
-        <!-- Hero Section -->
         <section class="max-w-6xl mx-auto px-6 pt-16 pb-12 text-center relative">
             <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-50 via-transparent to-transparent opacity-70"></div>
             
@@ -62,9 +59,7 @@
                 Ứng dụng hợp đồng thông minh (Smart Contract) để định danh, lưu vết hành trình và xác thực nguồn gốc biệt dược theo thời gian thực.
             </p>
 
-            <!-- Cặp nút bấm đi qua 2 trang cốt lõi -->
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-md mx-auto">
-                <!-- Nút qua trang Nhà Sản Xuất / Quản Trị -->
                 <a href="login.php" class="group w-full sm:w-auto flex items-center justify-between sm:justify-center space-x-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-4 rounded-2xl shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid fa-file-medical text-blue-400 group-hover:rotate-12 transition"></i>
@@ -76,7 +71,6 @@
                     <i class="fa-solid fa-arrow-right text-sm text-slate-400 group-hover:translate-x-1 transition"></i>
                 </a>
 
-                <!-- Nút qua trang Truy Xuất Nguồn Gốc -->
                 <a href="trace.html" class="group w-full sm:w-auto flex items-center justify-between sm:justify-center space-x-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold px-6 py-4 rounded-2xl shadow-xl shadow-emerald-100 transition-all duration-200 transform hover:-translate-y-0.5">
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid fa-qrcode text-emerald-200 text-lg group-hover:scale-110 transition"></i>
@@ -90,7 +84,6 @@
             </div>
         </section>
 
-        <!-- Khối thống kê số liệu (Dashboard Stats) -->
         <section class="max-w-5xl mx-auto px-6 py-8">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
@@ -112,7 +105,6 @@
             </div>
         </section>
 
-        <!-- Tính năng cốt lõi (Core Features) -->
         <section class="max-w-5xl mx-auto px-6 py-12">
             <div class="text-center mb-12">
                 <h3 class="text-2xl font-bold text-slate-800">Kiến trúc vận hành hệ sinh thái</h3>
@@ -120,7 +112,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Card 1 -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
                     <div class="bg-blue-50 text-blue-600 w-12 h-12 rounded-xl flex items-center justify-center mb-4 text-xl">
                         <i class="fa-solid fa-cubes"></i>
@@ -131,7 +122,6 @@
                     </p>
                 </div>
 
-                <!-- Card 2 -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
                     <div class="bg-emerald-50 text-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center mb-4 text-xl">
                         <i class="fa-solid fa-link"></i>
@@ -142,7 +132,6 @@
                     </p>
                 </div>
 
-                <!-- Card 3 -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
                     <div class="bg-amber-50 text-amber-600 w-12 h-12 rounded-xl flex items-center justify-center mb-4 text-xl">
                         <i class="fa-solid fa-user-shield"></i>
@@ -157,7 +146,6 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-6">
         <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 gap-3">
             <p>© 2026 PharmaChain Hub. Hệ thống ứng dụng công nghệ Web3 tối cao bảo vệ sức khỏe cộng đồng.</p>
