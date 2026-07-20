@@ -8,9 +8,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 // 2. Kết nối cơ sở dữ liệu MySQL
-require_once '../config/config.php'; 
+require_once '../config/config.php';
 
-$conn = getDbConnection(); 
+$conn = getDbConnection();
 
 // 3. XỬ LÝ API AJAX (Ghi nhận lô thuốc sau khi đã có tx_hash từ Blockchain)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_lo_thuoc') {
@@ -632,33 +632,33 @@ try {
                             </thead>
                             <tbody>
                                 <?php foreach ($lo_thuoc_list as $lo): ?>
-                                <tr>
-                                    <td class="cell-strong">
-                                        <?php echo htmlspecialchars($lo['ma_lo']); ?>
-                                    </td>
-                                    <td class="cell-strong" style="color: var(--green-700);">
-                                        <?php echo htmlspecialchars($lo['ten_thuoc']); ?>
-                                    </td>
-                                    <td class="cell-strong" style="font-family: monospace;">
-                                        <?php echo htmlspecialchars($lo['ma_tra_cuu']); ?>
-                                    </td>
-                                    <td>
-                                        <?php echo $lo['ngay_san_xuat']; ?>
-                                    </td>
-                                    <td>
-                                        <?php echo $lo['han_su_dung']; ?>
-                                    </td>
-                                    <td>
-                                        <?php echo number_format($lo['so_luong_ton']); ?>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-active">Đã xác thực</span>
-                                    </td>
-                                    <td style="font-family: monospace; font-size: 11.5px; color: var(--gray-500);"
-                                        title="<?php echo $lo['tx_hash']; ?>">
-                                        <?php echo substr($lo['tx_hash'], 0, 10) . '...' . substr($lo['tx_hash'], -8); ?>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td class="cell-strong">
+                                            <?php echo htmlspecialchars($lo['ma_lo']); ?>
+                                        </td>
+                                        <td class="cell-strong" style="color: var(--green-700);">
+                                            <?php echo htmlspecialchars($lo['ten_thuoc']); ?>
+                                        </td>
+                                        <td class="cell-strong" style="font-family: monospace;">
+                                            <?php echo htmlspecialchars($lo['ma_tra_cuu']); ?>
+                                        </td>
+                                        <td>
+                                            <?php echo $lo['ngay_san_xuat']; ?>
+                                        </td>
+                                        <td>
+                                            <?php echo $lo['han_su_dung']; ?>
+                                        </td>
+                                        <td>
+                                            <?php echo number_format($lo['so_luong_ton']); ?>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-active">Đã xác thực</span>
+                                        </td>
+                                        <td style="font-family: monospace; font-size: 11.5px; color: var(--gray-500);"
+                                            title="<?php echo $lo['tx_hash']; ?>">
+                                            <?php echo substr($lo['tx_hash'], 0, 10) . '...' . substr($lo['tx_hash'], -8); ?>
+                                        </td>
+                                    </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
@@ -683,9 +683,9 @@ try {
                             <select id="id_thuoc" required>
                                 <option value="">-- Chọn thuốc --</option>
                                 <?php foreach ($thuoc_options as $t): ?>
-                                <option value="<?php echo $t['id_thuoc']; ?>">
-                                    <?php echo htmlspecialchars($t['ten_thuoc']); ?>
-                                </option>
+                                    <option value="<?php echo $t['id_thuoc']; ?>">
+                                        <?php echo htmlspecialchars($t['ten_thuoc']); ?>
+                                    </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -706,11 +706,11 @@ try {
                             <select id="id_cty_dang_ky" required>
                                 <option value="">-- Chọn đơn vị --</option>
                                 <?php foreach ($doanh_nghiep_list as $dn): ?>
-                                <?php if ($dn['loai_hinh'] === 'DangKy' || $dn['loai_hinh'] === 'CaHai'): ?>
-                                <option value="<?php echo $dn['id_doanh_nghiep']; ?>">
-                                    <?php echo htmlspecialchars($dn['ten_doanh_nghiep']); ?>
-                                </option>
-                                <?php endif; ?>
+                                    <?php if ($dn['loai_hinh'] === 'DangKy' || $dn['loai_hinh'] === 'CaHai'): ?>
+                                        <option value="<?php echo $dn['id_doanh_nghiep']; ?>">
+                                            <?php echo htmlspecialchars($dn['ten_doanh_nghiep']); ?>
+                                        </option>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -719,11 +719,11 @@ try {
                             <select id="id_cty_san_xuat" required>
                                 <option value="">-- Chọn nhà máy --</option>
                                 <?php foreach ($doanh_nghiep_list as $dn): ?>
-                                <?php if ($dn['loai_hinh'] === 'SanXuat' || $dn['loai_hinh'] === 'CaHai'): ?>
-                                <option value="<?php echo $dn['id_doanh_nghiep']; ?>">
-                                    <?php echo htmlspecialchars($dn['ten_doanh_nghiep']); ?>
-                                </option>
-                                <?php endif; ?>
+                                    <?php if ($dn['loai_hinh'] === 'SanXuat' || $dn['loai_hinh'] === 'CaHai'): ?>
+                                        <option value="<?php echo $dn['id_doanh_nghiep']; ?>">
+                                            <?php echo htmlspecialchars($dn['ten_doanh_nghiep']); ?>
+                                        </option>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -750,7 +750,10 @@ try {
             </div>
         </div>
     </div>
-
+    <!-- Nhúng thư viện Ethers.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <!-- Sau đó nhúng file xử lý logic tương tác contract -->
+    <script src="../js/blockchain-tracker.js"></script>
     <!-- ===== BLOCKCHAIN WEB3 SCRIPT INTEGRATION ===== -->
     <script>
         // Khai báo cấu hình hợp đồng thông minh đã biên dịch từ ví dụ thư mục bin/
@@ -763,7 +766,9 @@ try {
 
         window.addEventListener('load', async () => {
             if (window.ethereum) {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts'
+                });
                 if (accounts.length > 0) handleWalletConnected(accounts[0]);
             }
         });
@@ -771,10 +776,16 @@ try {
         async function connectWallet() {
             if (window.ethereum) {
                 try {
-                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
                     handleWalletConnected(accounts[0]);
-                } catch (error) { alert("Kết nối ví thất bại!"); }
-            } else { alert("Vui lòng cài đặt tiện ích MetaMask!"); }
+                } catch (error) {
+                    alert("Kết nối ví thất bại!");
+                }
+            } else {
+                alert("Vui lòng cài đặt tiện ích MetaMask!");
+            }
         }
 
         function handleWalletConnected(address) {
@@ -783,8 +794,13 @@ try {
             document.getElementById('connectWalletBtn').classList.add('connected');
         }
 
-        function openModal() { document.getElementById('modalForm').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('modalForm').classList.add('hidden'); }
+        function openModal() {
+            document.getElementById('modalForm').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modalForm').classList.add('hidden');
+        }
 
         // LUỒNG KÝ DUYỆT ĐẨY DỮ LIỆU LÊN CHUỖI KHÉP KÍN
         async function publishToBlockchain() {
@@ -839,7 +855,10 @@ try {
                 formData.append('so_luong_ton', so_luong_ton);
                 formData.append('gia_nhap', gia_nhap);
 
-                const response = await fetch('quanLyLoThuoc.php', { method: 'POST', body: formData });
+                const response = await fetch('quanLyLoThuoc.php', {
+                    method: 'POST',
+                    body: formData
+                });
                 const result = await response.json();
 
                 if (result.success) {
