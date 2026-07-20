@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f8fafc;
         }
+
         .gradient-text {
             background: linear-gradient(135deg, #059669 0%, #2563eb 100%);
             -webkit-background-clip: text;
@@ -18,6 +20,7 @@
         }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
 
     <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
@@ -31,7 +34,7 @@
                     <span class="text-xs text-emerald-600 font-semibold tracking-wider uppercase">Blockchain Ecosystem</span>
                 </div>
             </div>
-            
+
             <div class="flex items-center space-x-3">
                 <span class="hidden md:inline-flex text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-medium">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1.5 animate-ping"></span>
@@ -42,19 +45,19 @@
     </header>
 
     <main class="flex-grow w-full">
-        
+
         <section class="max-w-6xl mx-auto px-6 pt-16 pb-12 text-center relative">
             <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-50 via-transparent to-transparent opacity-70"></div>
-            
+
             <span class="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider shadow-sm">
                 <i class="fa-solid fa-shield-halved text-sm text-blue-600"></i>
                 <span>Giải pháp chống thuốc giả tối ưu</span>
             </span>
-            
+
             <h2 class="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-none mb-6 max-w-4xl mx-auto">
                 Minh Bạch Chuỗi Cung Ứng Dược Phẩm Với <span class="gradient-text">Blockchain</span>
             </h2>
-            
+
             <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
                 Ứng dụng hợp đồng thông minh (Smart Contract) để định danh, lưu vết hành trình và xác thực nguồn gốc biệt dược theo thời gian thực.
             </p>
@@ -71,7 +74,7 @@
                     <i class="fa-solid fa-arrow-right text-sm text-slate-400 group-hover:translate-x-1 transition"></i>
                 </a>
 
-                <a href="trace.html" class="group w-full sm:w-auto flex items-center justify-between sm:justify-center space-x-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold px-6 py-4 rounded-2xl shadow-xl shadow-emerald-100 transition-all duration-200 transform hover:-translate-y-0.5">
+                <a href="trace.php" class="group w-full sm:w-auto flex items-center justify-between sm:justify-center space-x-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold px-6 py-4 rounded-2xl shadow-xl shadow-emerald-100 transition-all duration-200 transform hover:-translate-y-0.5">
                     <div class="flex items-center space-x-3">
                         <i class="fa-solid fa-qrcode text-emerald-200 text-lg group-hover:scale-110 transition"></i>
                         <span class="text-left leading-tight">
@@ -157,4 +160,5 @@
     </footer>
 
 </body>
+
 </html>
