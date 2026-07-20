@@ -2,15 +2,20 @@
 // config.php
 // Cấu hình dùng chung — nên chuyển các giá trị nhạy cảm ra biến môi trường (.env) khi lên production.
 
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
+
 // --- Kết nối MySQL ---
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'pharmachain_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'pharmachain_db');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
 
 // --- Địa chỉ dịch vụ Node.js nội bộ (chỉ xác minh chữ ký) ---
 define('NODE_VERIFY_URL', 'http://127.0.0.1:3001/verify-signature');
-define('INTERNAL_API_KEY', 'doi-key-nay-truoc-khi-deploy'); // phải khớp với verify-service.js
+define('INTERNAL_API_KEY', $_ENV['INTERNAL_API_KEY'] ?? ''); // phải khớp với verify-service.js
 
 /**
  * Trả về kết nối PDO tới MySQL, dùng chung cho các file khác.
