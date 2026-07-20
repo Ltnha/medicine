@@ -430,6 +430,7 @@ $thuoc_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <a class="nav-item" href="quanLyLoThuoc.php"><i class="fa-solid fa-boxes-stacked"></i> Quản lý lô
                     thuốc</a>
             </nav>
+            <a class="logout-link" href="../logout.php"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
         </aside>
 
         <main class="main">
