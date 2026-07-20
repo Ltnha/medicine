@@ -7,7 +7,7 @@ require('dotenv').config({ path: '../.env' });
 
 const express = require('express');
 const { ethers } = require('ethers');
-    
+
 const app = express();
 app.use(express.json());
 
@@ -24,6 +24,7 @@ app.post('/verify-signature', (req, res) => {
 
     const { message, signature, address } = req.body;
 
+    //ktra mã nội bộ để kết nối từ PHP sang Node.js
     if (!INTERNAL_API_KEY || apiKey !== INTERNAL_API_KEY) {
         return res.status(403).json({ error: 'Không có quyền truy cập dịch vụ nội bộ này!' });
     }
