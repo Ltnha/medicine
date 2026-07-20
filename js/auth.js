@@ -2,7 +2,7 @@ let provider;
 let signer;
 let userAddress = "";
 
-// 1. Hàm kết nối ví (không đổi)
+// 1. Hàm kết nối ví
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
         alert('Vui lòng cài đặt MetaMask hoặc ví Ethereum tương thích!');
@@ -68,7 +68,7 @@ async function handleSIWELogin() {
 
         if (verifyResult.success) {
             alert('Đăng nhập thành công! Quyền: ' + verifyResult.role);
-            window.location.href = '../admin/dashBoard.php';
+            window.location.href = 'admin/dashBoard.php';
         } else {
             alert('Đăng nhập thất bại: ' + (verifyResult.error || 'Không rõ nguyên nhân'));
         }
