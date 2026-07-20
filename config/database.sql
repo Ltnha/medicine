@@ -1,3 +1,5 @@
+create DATABASE pharmachain_db;
+use pharmachain_db;
 -- 1. BẢNG DOANH NGHIỆP
 CREATE TABLE DoanhNghiep (
     id_doanh_nghiep INT AUTO_INCREMENT PRIMARY KEY,
