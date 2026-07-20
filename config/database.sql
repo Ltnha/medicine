@@ -85,7 +85,8 @@ INSERT INTO DoanhNghiep (id_doanh_nghiep, ten_doanh_nghiep, dia_chi_doanh_nghiep
 INSERT INTO admin (ma_admin, ma_vi, id_doanh_nghiep, role) VALUES
 (1, '0xe0FCdDCd026C179A638953a50fE900D68d903F4a', 2, 'admin'),
 (2, '0x0285C31E1Cb022a4637533e75E505E811CBdF869', 1, 'admin'),
-(3, '0x1234567890abcdef1234567890abcdef12345678', 4, 'admin');
+(3, '0x919613b93B5dB431255218440F2908b4EB551c7e', 4, 'admin');
+
 
 -- DỮ LIỆU THUỐC (Đã chuẩn hóa 12 cột tương ứng 12 giá trị sạch)
 INSERT INTO Thuoc (id_thuoc, danh_muc, ten_thuoc, dang_bao_che, thanh_phan, ham_luong, cong_dung, don_vi_tinh, gia_ban, yeu_cau_ke_don, gioi_han_mua, trang_thai) VALUES 
