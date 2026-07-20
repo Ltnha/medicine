@@ -75,7 +75,7 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
     <style>
-        /* Bê nguyên hệ thống CSS gốc của bạn từ quanLyThuoc.html */
+        /* Bê nguyên hệ thống CSS gốc từ file cũ */
         :root {
             --green-900: #0f3d24;
             --green-700: #137a4a;
@@ -203,6 +203,7 @@ try {
             padding: 14px 12px 6px;
         }
 
+        /* Giữ nguyên cấu trúc padding gốc, loại bỏ hộp 40px theo yêu cầu */
         .nav-item {
             display: flex;
             align-items: center;
@@ -359,6 +360,16 @@ try {
             background: var(--green-900);
         }
 
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-700);
+        }
+
+        .btn-ghost:hover {
+            background: var(--gray-100);
+        }
+
         .table-card {
             background: var(--white);
             border: 1px solid var(--gray-200);
@@ -421,11 +432,6 @@ try {
             color: var(--green-700);
         }
 
-        .badge-lowstock {
-            background: var(--orange-50);
-            color: var(--orange-600);
-        }
-
         .btn-wallet {
             display: inline-flex;
             align-items: center;
@@ -466,7 +472,6 @@ try {
             transform: translateY(-50%);
         }
 
-        /* MODAL CHUẨN ĐÚNG THEO FILE CŨ */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -484,11 +489,12 @@ try {
             display: none;
         }
 
+        /* Tăng nhẹ chiều rộng lên 860px để hiển thị hệ 3 cột thông thoáng, cân đối */
         .modal-box {
             background: var(--white);
             border-radius: 22px;
             width: 100%;
-            max-width: 760px;
+            max-width: 860px;
             box-shadow: var(--shadow-modal);
             overflow: hidden;
         }
@@ -532,9 +538,10 @@ try {
             background: var(--gray-50);
         }
 
+        /* PHƯƠNG ÁN B: Thay thế grid 2 cột cũ bằng hệ 3 cột (3 cột x 3 hàng = 9 ô vừa khít hoàn hảo) */
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 16px;
         }
 
@@ -557,6 +564,7 @@ try {
             padding: 10px 12px;
             font-size: 13.5px;
             outline: none;
+            width: 100%;
         }
 
         .form-field input:focus,
@@ -585,8 +593,7 @@ try {
                 <div class="nav-label">Điều hướng</div>
                 <a class="nav-item" href="dashBoard.php"><i class="fa-solid fa-chart-pie"></i> Tổng quan</a>
                 <a class="nav-item" href="quanLyThuoc.php"><i class="fa-solid fa-pills"></i> Quản lý thuốc</a>
-                <a class="nav-item active" href="quanLyLoThuoc.php"><i class="fa-solid fa-boxes-stacked"></i> Quản lý lô
-                    thuốc</a>
+                <a class="nav-item active" href="quanLyLoThuoc.php"><i class="fa-solid fa-boxes-stacked"></i> Quản lý lô thuốc</a>
             </nav>
             <a class="logout-link" href="../logout.php"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
         </aside>
@@ -694,7 +701,7 @@ try {
                             <input type="text" id="ma_lo" placeholder="Ví dụ: LO-2026-09" required>
                         </div>
                         <div class="form-field">
-                            <label>Mã tra cứu chuỗi (In mã QR) <span style="color:red;">*</span></label>
+                            <label>Mã tra cứu chuỗi (QR) <span style="color:red;">*</span></label>
                             <input type="text" id="ma_tra_cuu" placeholder="Ví dụ: QR-PHARMA-001" required>
                         </div>
                         <div class="form-field">
@@ -702,7 +709,7 @@ try {
                             <input type="number" id="gia_nhap" required>
                         </div>
                         <div class="form-field">
-                            <label>Công ty Đăng ký nhận diện <span style="color:red;">*</span></label>
+                            <label>Công ty Đăng ký <span style="color:red;">*</span></label>
                             <select id="id_cty_dang_ky" required>
                                 <option value="">-- Chọn đơn vị --</option>
                                 <?php foreach ($doanh_nghiep_list as $dn): ?>
@@ -715,7 +722,7 @@ try {
                             </select>
                         </div>
                         <div class="form-field">
-                            <label>Nhà máy chịu trách nhiệm sản xuất <span style="color:red;">*</span></label>
+                            <label>Nhà máy sản xuất <span style="color:red;">*</span></label>
                             <select id="id_cty_san_xuat" required>
                                 <option value="">-- Chọn nhà máy --</option>
                                 <?php foreach ($doanh_nghiep_list as $dn): ?>
@@ -736,7 +743,7 @@ try {
                             <input type="date" id="han_su_dung" required>
                         </div>
                         <div class="form-field">
-                            <label>Số lượng đóng gói phát hành <span style="color:red;">*</span></label>
+                            <label>Số lượng đóng gói <span style="color:red;">*</span></label>
                             <input type="number" id="so_luong_ton" required>
                         </div>
                     </div>
@@ -750,14 +757,13 @@ try {
             </div>
         </div>
     </div>
+
     <!-- Nhúng thư viện Ethers.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <!-- Sau đó nhúng file xử lý logic tương tác contract -->
     <script src="../js/blockchain-tracker.js"></script>
-    <!-- ===== BLOCKCHAIN WEB3 SCRIPT INTEGRATION ===== -->
+    
     <script>
-        // Khai báo cấu hình hợp đồng thông minh đã biên dịch từ ví dụ thư mục bin/
-        const CONTRACT_ADDRESS = "0xe0FCdDCd026C179A638953a50fE900D68d903F4a"; // Thay địa chỉ Smart Contract của bạn vào đây
+        const CONTRACT_ADDRESS = "0xe0FCdDCd026C179A638953a50fE900D68d903F4a"; 
         const CONTRACT_ABI = [
             "function registerLot(string _maLo, string _maTraCuu, uint256 _idThuoc, uint256 _sl) public returns (bytes32)"
         ];
@@ -802,14 +808,12 @@ try {
             document.getElementById('modalForm').classList.add('hidden');
         }
 
-        // LUỒNG KÝ DUYỆT ĐẨY DỮ LIỆU LÊN CHUỖI KHÉP KÍN
         async function publishToBlockchain() {
             if (!userAddress) {
                 alert("Bạn cần phải kết nối ví MetaMask trước khi phát hành lên chuỗi dữ liệu!");
                 return;
             }
 
-            // Lấy thông tin từ form
             const id_thuoc = document.getElementById('id_thuoc').value;
             const ma_lo = document.getElementById('ma_lo').value;
             const ma_tra_cuu = document.getElementById('ma_tra_cuu').value;
@@ -826,28 +830,23 @@ try {
             }
 
             try {
-                // Khởi tạo thư viện Ethers kết nối MetaMask làm bằng chứng giao dịch
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
                 const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
                 alert("Hệ thống chuẩn bị gọi MetaMask ký duyệt giao dịch, vui lòng xác nhận trên cửa sổ ví...");
 
-                // Gọi hàm ghi dữ liệu vào Smart Contract phi tập trung
                 const tx = await contract.registerLot(ma_lo, ma_tra_cuu, id_thuoc, so_luong_ton);
-
                 alert("Giao dịch đang được đẩy lên khối chuỗi. Vui lòng đợi trong giây lát... TxHash: " + tx.hash);
 
-                // Chờ giao dịch đào xong thành công
                 await tx.wait();
 
-                // ĐỒNG BỘ DỮ LIỆU: Đẩy ngược tx_hash về lưu MySQL thông qua cơ chế AJAX truyền ngầm
                 const formData = new FormData();
                 formData.append('action', 'save_lo_thuoc');
                 formData.append('id_thuoc', id_thuoc);
                 formData.append('ma_lo', ma_lo);
                 formData.append('ma_tra_cuu', ma_tra_cuu);
-                formData.append('tx_hash', tx.hash); // Lưu bằng chứng chuỗi bảo mật toàn vẹn dữ liệu
+                formData.append('tx_hash', tx.hash); 
                 formData.append('id_cty_dang_ky', id_cty_dang_ky);
                 formData.append('id_cty_san_xuat', id_cty_san_xuat);
                 formData.append('ngay_san_xuat', ngay_san_xuat);
@@ -863,7 +862,7 @@ try {
 
                 if (result.success) {
                     alert(result.message);
-                    window.location.reload(); // Tải lại trang để cập nhật bảng mới nhất
+                    window.location.reload(); 
                 } else {
                     alert("Lỗi khi lưu vào MySQL: " + result.message);
                 }
@@ -875,5 +874,4 @@ try {
         }
     </script>
 </body>
-
 </html>
