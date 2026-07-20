@@ -1,71 +1,91 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
 contract DrugTracker {
     
-    // Định nghĩa các trạng thái tương ứng với thẻ <select> trong HTML
-    enum DrugStatus { Created, InTransit, InPharmacy, Sold }
-
-    // Cấu trúc một mốc lịch sử dịch chuyển
-    struct TrackingStep {
-        DrugStatus status;    // Trạng thái số (0, 1, 2, 3)
-        uint256 timestamp;    // Thời gian block ghi nhận
-        address updatedBy;    // Địa chỉ ví thực hiện ký xác nhận
+    // Định nghĩa cấu trúc một Lô thuốc tương ứng với nhu cầu truy xuất
+    struct Batch {
+        string maLo;
+        uint256 idThuoc;
+        uint256 idCtyDangKy;
+        uint256 idCtySanXuat;
+        uint256 hanSuDung;     // Lưu dưới dạng timestamp (uint256)
+        bool isCompromised;   // false = an toàn, true = giả mạo
+        bool isExist;         // Kiểm tra lô thuốc đã tồn tại chưa
     }
 
-    // Cấu trúc tổng quan của lô thuốc
-    struct Drug {
-        string id;            // Mã chuỗi định danh (VD: DRUG_2026_001)
-        bool isInitialized;   // Đánh dấu kiểm tra tồn tại
-        TrackingStep[] history; // Toàn bộ hành trình lưu trữ
+    // Dùng Mapping để tìm kiếm Lô thuốc nhanh chóng bằng ma_tra_cuu
+    mapping(string => Batch) private batches;
+    
+    // Địa chỉ của người quản trị (Deployer) có quyền quản lý danh sách Admin
+    address public owner;
+    mapping(address => bool) public admins;
+
+    // Các sự kiện (Events) để Web Frontend lắng nghe
+    event BatchRegistered(string indexed maTraCuu, string maLo, uint256 idThuoc);
+    event BatchStatusUpdated(string indexed maTraCuu, bool isCompromised);
+
+    constructor() {
+        owner = msg.sender;
+        admins[msg.sender] = true; // Khởi tạo owner cũng là admin
     }
 
-    // Lưu trữ thông tin trên Blockchain
-    mapping(string => Drug) private drugs;
+    // 3 hàm xử lý
 
-    // Sự kiện sinh ra để ứng dụng lắng nghe
-    event DrugCreated(string id, address creator);
-    event DrugStatusUpdated(string id, DrugStatus status, address updater);
-
-    // 1. Hàm khởi tạo thuốc (createDrug) - Tương ứng nút "Cho Nhà Máy"
-    function createDrug(string memory _id) public {
-        require(!drugs[_id].isInitialized, "ID thuoc da ton tai tren he thong!");
-
-        Drug storage newDrug = drugs[_id];
-        newDrug.id = _id;
-        newDrug.isInitialized = true;
-
-        // Lưu mốc đầu tiên: Trạng thái 0 (Created)
-        newDrug.history.push(TrackingStep({
-            status: DrugStatus.Created,
-            timestamp: block.timestamp,
-            updatedBy: msg.sender
-        }));
-
-        emit DrugCreated(_id, msg.sender);
+    //Hàm phân quyền & Quản lý Admin 
+    modifier onlyAdmin() {
+        require(admins[msg.sender], "Ngoai le: Ban khong phai Admin");
+        _; //vị trí giữ chỗ
     }
 
-    // 2. Hàm cập nhật trạng thái (updateDrug) - Tương ứng Logistics/Nhà thuốc
-    function updateDrug(string memory _id, uint8 _statusIndex) public {
-        require(drugs[_id].isInitialized, "Mang luoi khong tim thay ID thuoc nay!");
-        require(_statusIndex <= 3, "Trang thai cap nhat khong hop le!");
+    function addAdmin(address _admin) public {
+        require(msg.sender == owner, "Chi co Owner moi co quyen");
+        admins[_admin] = true;
+    }
+
+    //Hàm thêm lô thuốc mới
+    function registerBatch(
+        string memory _maTraCuu,
+        string memory _maLo,
+        uint256 _idThuoc,
+        uint256 _idCtyDangKy,
+        uint256 _idCtySanXuat,
+        uint256 _hanSuDung
+    ) public onlyAdmin {
+        require(!batches[_maTraCuu].isExist, "Loi: Ma tra cuu nay da ton tai");
+
+        batches[_maTraCuu] = Batch({
+            maLo: _maLo,
+            idThuoc: _idThuoc,
+            idCtyDangKy: _idCtyDangKy,
+            idCtySanXuat: _idCtySanXuat,
+            hanSuDung: _hanSuDung,
+            isCompromised: false,
+            isExist: true
+        });
+
+        emit BatchRegistered(_maTraCuu, _maLo, _idThuoc);
+    }
+
+    // Hàm cập nhật trạng thái bảo mật (Báo động giả mạo / Thu hồi lô thuốc)
+    function updateBatchStatus(string memory _maTraCuu, bool _isCompromised) public onlyAdmin {
+        require(batches[_maTraCuu].isExist, "Ma tra cuu khong ton tai");
         
-        // Kiểm tra xem thuốc đã bán chưa, nếu bán rồi (Sold) thì không được cập nhật tiếp
-        uint256 lastIndex = drugs[_id].history.length - 1;
-        require(drugs[_id].history[lastIndex].status != DrugStatus.Sold, "Thuoc da duoc ban, khong the thay doi lich trinh!");
-
-        drugs[_id].history.push(TrackingStep({
-            status: DrugStatus(_statusIndex),
-            timestamp: block.timestamp,
-            updatedBy: msg.sender
-        }));
-
-        emit DrugStatusUpdated(_id, DrugStatus(_statusIndex), msg.sender);
+        batches[_maTraCuu].isCompromised = _isCompromised;
+        
+        emit BatchStatusUpdated(_maTraCuu, _isCompromised);
     }
-
-    // 3. Hàm kiểm tra/tra cứu lịch sử thuốc (checkDrug)
-    function checkDrug(string memory _id) public view returns (bool isInitialized, TrackingStep[] memory history) {
-        Drug storage d = drugs[_id];
-        return (d.isInitialized, d.history);
+    //Hàm kiểm tra / truy xuất nguồn gốc
+    function getBatch(string memory _maTraCuu) public view returns (
+        string memory maLo,
+        uint256 idThuoc,
+        uint256 idCtyDangKy,
+        uint256 idCtySanXuat,
+        uint256 hanSuDung,
+        bool isCompromised
+    ) {
+        require(batches[_maTraCuu].isExist, "Ma tra cuu khong ton tai");
+        Batch memory b = batches[_maTraCuu];
+        return (b.maLo, b.idThuoc, b.idCtyDangKy, b.idCtySanXuat, b.hanSuDung, b.isCompromised);
     }
 }

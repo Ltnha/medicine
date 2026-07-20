@@ -3,6 +3,8 @@
 // KHÔNG session, KHÔNG kết nối DB, KHÔNG cookie.
 // Chỉ nên bind vào 127.0.0.1, PHP gọi sang qua HTTP nội bộ (không public ra ngoài internet).
 
+require('dotenv').config({ path: '../.env' });
+
 const express = require('express');
 const { ethers } = require('ethers');
 
@@ -11,7 +13,7 @@ app.use(express.json());
 
 // Khóa bí mật dùng để xác thực request đến từ PHP (không phải từ browser)
 // Đặt cùng giá trị này trong file cấu hình PHP, và nên đọc từ biến môi trường thay vì hardcode.
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'doi-key-nay-truoc-khi-deploy';
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;
 
 app.post('/verify-signature', (req, res) => {
     // Kiểm tra request có đúng từ PHP server gọi sang không (không phải từ browser)
@@ -22,6 +24,11 @@ app.post('/verify-signature', (req, res) => {
 
     const { message, signature, address } = req.body;
 
+    //ktra mã nội bộ để kết nối từ PHP sang Node.js
+    if (!INTERNAL_API_KEY || apiKey !== INTERNAL_API_KEY) {
+        return res.status(403).json({ error: 'Không có quyền truy cập dịch vụ nội bộ này!' });
+    }
+    
     if (!message || !signature || !address) {
         return res.status(400).json({ error: 'Thiếu dữ liệu: message, signature, address là bắt buộc!' });
     }
