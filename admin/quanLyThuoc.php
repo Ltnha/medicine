@@ -324,15 +324,7 @@ $thuoc_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     Quản lý lô thuốc
                 </a>
             </nav>
-<<<<<<< HEAD
-
-            <a class="logout-link" href="../logout.php">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                Đăng xuất
-            </a>
-=======
             <a class="logout-link" href="../logout.php"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
->>>>>>> 509271c6589939916ff8cab0521dcdbb65528f9c
         </aside>
 
         <main class="main">
