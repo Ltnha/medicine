@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!empty($_SESSION['admin_id']) && !empty($_SESSION['role']) && strtolower($_SESSION['role']) === 'admin') {
-    header('Location: adminDashboard.php');
+    header('Location: admin/dashBoard.php');
     exit;
 }
 ?>

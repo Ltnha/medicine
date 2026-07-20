@@ -68,7 +68,7 @@ async function handleSIWELogin() {
 
         if (verifyResult.success) {
             alert('Đăng nhập thành công! Quyền: ' + verifyResult.role);
-            window.location.href = 'adminDashboard.php';
+            window.location.href = '../admin/dashBoard.php';
         } else {
             alert('Đăng nhập thất bại: ' + (verifyResult.error || 'Không rõ nguyên nhân'));
         }
