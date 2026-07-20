@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Truy xuất Nguồn gốc & Chống thuốc giả Blockchain</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .card-header { background-color: #fff; border-bottom: 1px solid #edf2f9; font-weight: bold; color: #333; }
+        .timeline { position: relative; padding-left: 30px; list-style: none; }
+        .timeline::before { content: ""; position: absolute; top: 0; bottom: 0; left: 15px; width: 3px; background: #e9ecef; }
+        .timeline-item { position: relative; margin-bottom: 25px; }
+        .timeline-item::before { content: ""; position: absolute; left: -22px; top: 5px; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #ced4da; z-index: 1; }
+        .status-created::before { border-color: #28a745; background-color: #28a745; }
+        .status-transit::before { border-color: #ffc107; background-color: #ffc107; }
+        .status-pharmacy::before { border-color: #007bff; background-color: #007bff; }
+        .status-sold::before { border-color: #dc3545; background-color: #dc3545; }
+        .badge-status { font-size: 1.1rem; padding: 10px 15px; }
+        .d-none-custom { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Thanh điều hướng / Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="khachhang.html">
+                <i class="fa-solid fa-shield-halved text-success me-2"></i> Trực Quan Chống Thuốc Giả
+            </a>
+            
+            <div class="d-flex gap-2">
+                <!-- Nút kết nối ví được mang ra ngoài trang khách hàng -->
+                <button class="btn btn-outline-light btn-sm" id="btnConnectMetamask" onclick="connectWallet()">
+                    <i class="fa-solid fa-wallet me-1"></i> Kết nối Metamask
+                </button>
+                <!-- Nút nâng cao thay cho nút dành cho nhà sản xuất ban đầu -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" id="btnAdvanced" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-solid fa-gears me-1"></i> Nâng cao
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="btnAdvanced">
+                        <li><a class="dropdown-item" href="#" onclick="handleRegistration('factory')"><i class="fa-solid fa-industry me-2"></i>Đăng ký Nhà sản xuất</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleRegistration('pharmacy')"><i class="fa-solid fa-prescription-bottle-medical me-2"></i>Đăng ký Nhà thuốc</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="nhamay.html"><i class="fa-solid fa-building-shield me-2"></i>Vào Trang Nhà Máy</a></li>
+                        <li><a class="dropdown-item" href="banthuoc.html"><i class="fa-solid fa-shop me-2"></i>Vào Trang Bán Thuốc</a></li>
+                        <li><a class="dropdown-item" href="admin.html"><i class="fa-solid fa-user-shield me-2"></i>Vào Trang Admin</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            
+            <!-- GIAO DIỆN TRA CỨU NGƯỜI TIÊU DÙNG -->
+            <div class="col-md-8" id="consumerSection">
+                <div class="card">
+                    <div class="card-header text-success"><i class="fa-solid fa-magnifying-glass me-2"></i> TRA CỨU DÀNH CHO NGƯỜI TIÊU DÙNG</div>
+                    <div class="card-body">
+                        <div class="input-group mb-4">
+                            <input type="text" id="searchDrugId" class="form-control" placeholder="Nhập ID thuốc để kiểm tra..." value="abc123">
+                            <button class="btn btn-primary" type="button" onclick="getDrugHistory()">
+                                <i class="fa-solid fa-qrcode me-1"></i> Quét / Kiểm tra
+                            </button>
+                        </div>
+
+                        <div id="productInfoSection" class="mb-4 d-none">
+                            <div class="row g-0 border rounded p-3 bg-white">
+                                <div class="col-4 text-center">
+                                    <img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=150" class="img-fluid rounded" alt="Hình ảnh thuốc">
+                                </div>
+                                <div class="col-8 ps-3">
+                                    <h6 class="mb-1 text-uppercase text-primary" id="txtProductName">Thuốc bổ trợ sức khoẻ tổng hợp</h6>
+                                    <p class="small text-muted mb-1">Nhà sản xuất: <span id="txtManufacturer">Nhà Máy Dược Phẩm X</span></p>
+                                    <p class="small text-muted mb-0">Liên kết sản phẩm: <a href="#" class="text-decoration-none">Xem chi tiết</a></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-4" id="alertSection"></div>
+
+                        <h6 class="text-secondary mb-3"><i class="fa-solid fa-clock-rotate-left me-1"></i> Lịch sử dịch chuyển (Dữ liệu Blockchain):</h6>
+                        <ul class="timeline" id="timelineList">
+                            <li class="text-muted text-center py-3">Vui lòng nhập mã ID thuốc phía trên để bắt đầu tra cứu.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORM ĐĂNG KÝ CHO NHÀ SẢN XUẤT -->
+            <div class="col-md-8 d-none-custom" id="formFactorySection">
+                <div class="card">
+                    <div class="card-header text-primary"><i class="fa-solid fa-industry me-2"></i> FORM ĐĂNG KÝ HỆ THỐNG - NHÀ SẢN XUẤT</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ ví Metamask hiện tại:</label>
+                            <input type="text" class="form-control wallet-address-display" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tên nhà máy / doanh nghiệp:</label>
+                            <input type="text" id="factoryName" class="form-control" placeholder="Ví dụ: Nhà Máy Dược Phẩm X">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giấy phép số:</label>
+                            <input type="text" id="factoryLicense" class="form-control" placeholder="Số GPKD / Giấy chứng nhận GMP">
+                        </div>
+                        <button class="btn btn-primary w-100" onclick="submitRegistration('Nhà sản xuất')">Gửi yêu cầu phê duyệt cho Admin</button>
+                        <button class="btn btn-link w-100 mt-2 text-decoration-none" onclick="backToSearch()">Quay lại tra cứu</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORM ĐĂNG KÝ CHO NHÀ THUỐC -->
+            <div class="col-md-8 d-none-custom" id="formPharmacySection">
+                <div class="card">
+                    <div class="card-header text-info"><i class="fa-solid fa-prescription-bottle-medical me-2"></i> FORM ĐĂNG KÝ HỆ THỐNG - NHÀ THUỐC / ĐẠI LÝ</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ ví Metamask hiện tại:</label>
+                            <input type="text" class="form-control wallet-address-display" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tên hiệu thuốc / Đơn vị phân phối:</label>
+                            <input type="text" id="pharmacyName" class="form-control" placeholder="Ví dụ: Nhà Thuốc Tây Z">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ kinh doanh:</label>
+                            <input type="text" id="pharmacyAddress" class="form-control" placeholder="Nhập địa chỉ cụ thể">
+                        </div>
+                        <button class="btn btn-info text-white w-100" onclick="submitRegistration('Nhà thuốc')">Gửi yêu cầu phê duyệt cho Admin</button>
+                        <button class="btn btn-link w-100 mt-2 text-decoration-none" onclick="backToSearch()">Quay lại tra cứu</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const contractABI = [
+            { "inputs": [{ "internalType": "string", "name": "_id", "type": "string" }], "name": "checkDrug", "outputs": [{ "internalType": "bool", "name": "isInitialized", "type": "bool" }, { "components": [{ "internalType": "enum DrugTracker.DrugStatus", "name": "status", "type": "uint8" }, { "internalType": "uint256", "name": "timestamp", "type": "uint256" }, { "internalType": "address", "name": "updatedBy", "type": "address" }], "internalType": "struct DrugTracker.TrackingStep[]", "name": "history", "type": "tuple[]" }], "stateMutability": "view", "type": "function" }
+        ];
+
+        let web3;
+        let walletAddress = "";
+        let myContract;
+        const CONTRACT_ADDRESS = "0x9237c8505195f2f82f89991776355e949Ba63d68"; 
+
+        async function checkAndInitWeb3() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                myContract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
+                return true;
+            }
+            alert("Không tìm thấy ví MetaMask! Vui lòng cài đặt extension MetaMask.");
+            return false;
+        }
+
+        async function connectWallet() {
+            const hasWeb3 = await checkAndInitWeb3();
+            if (!hasWeb3) return false;
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                walletAddress = accounts[0];
+                let formattedAddress = walletAddress.substring(0,6) + "..." + walletAddress.substring(38);
+                document.getElementById('btnConnectMetamask').innerHTML = `<i class="fa-solid fa-wallet me-1"></i> Đã kết nối: ${formattedAddress}`;
+                
+                let displays = document.getElementsByClassName('wallet-address-display');
+                for(let el of displays) { el.value = walletAddress; }
+                return true;
+            } catch (error) {
+                alert("Bạn đã từ chối quyền kết nối ví MetaMask.");
+                return false;
+            }
+        }
+
+        async function handleRegistration(type) {
+            if(!walletAddress) {
+                alert("Bạn phải kết nối ví Metamask trước khi thực hiện chức năng đăng ký nâng cao này!");
+                const isConnected = await connectWallet();
+                if(!isConnected) return;
+            }
+
+            document.getElementById('consumerSection').classList.add('d-none-custom');
+            if(type === 'factory') {
+                document.getElementById('formPharmacySection').classList.add('d-none-custom');
+                document.getElementById('formFactorySection').classList.remove('d-none-custom');
+            } else {
+                document.getElementById('formFactorySection').classList.add('d-none-custom');
+                document.getElementById('formPharmacySection').classList.remove('d-none-custom');
+            }
+        }
+
+        function backToSearch() {
+            document.getElementById('formFactorySection').classList.add('d-none-custom');
+            document.getElementById('formPharmacySection').classList.add('d-none-custom');
+            document.getElementById('consumerSection').classList.remove('d-none-custom');
+        }
+
+        function submitRegistration(role) {
+            alert(`[Yêu cầu gửi đi] Đã gửi thông tin đăng ký vai trò [${role}] gắn liền với ví ${walletAddress} lên hệ thống phê duyệt của Admin.`);
+            backToSearch();
+        }
+
+        async function getDrugHistory() {
+            let id = document.getElementById('searchDrugId').value.trim();
+            if(!id) return alert("Hãy nhập ID để tra cứu!");
+            await checkAndInitWeb3();
+            try {
+                const result = await myContract.methods.checkDrug(id).call();
+                let isInitialized = result[0];
+                let historyArray = result[1] || [];
+                let alertSection = document.getElementById('alertSection');
+                let timelineList = document.getElementById('timelineList');
+                document.getElementById('productInfoSection').classList.remove('d-none');
+
+                if (!isInitialized || historyArray.length === 0) {
+                    alertSection.innerHTML = `<span class="badge bg-dark badge-status"><i class="fa-solid fa-ban me-2"></i> CẢNH BÁO: Thuốc giả (ID không có trên hệ thống)!</span>`;
+                    timelineList.innerHTML = `<li class="text-danger text-center font-weight-bold py-3">Không tìm thấy lịch sử sản phẩm.</li>`;
+                    return;
+                }
+
+                let latestStatus = parseInt(historyArray[historyArray.length - 1].status);
+                if (latestStatus === 3) {
+                    alertSection.innerHTML = `<span class="badge bg-danger badge-status"><i class="fa-solid fa-triangle-exclamation me-2"></i> CẢNH BÁO: Hộp thuốc đã được bán từ trước! Nguy cơ tái chế!</span>`;
+                } else {
+                    alertSection.innerHTML = `<span class="badge bg-success badge-status"><i class="fa-solid fa-circle-check me-2"></i> Trạng thái: CHƯA BÁN (Sản phẩm chính hãng hợp lệ)</span>`;
+                }
+
+                let timelineHTML = "";
+                const statusMap = {
+                    0: { text: "Sản xuất thành công tại Nhà máy", class: "status-created" },
+                    1: { text: "Đang vận chuyển bởi Công ty Logistics", class: "status-transit" },
+                    2: { text: "Đã nhập kho tại Nhà thuốc", class: "status-pharmacy" },
+                    3: { text: "Đã bán cho khách hàng (Vô hiệu hóa mã QR)", class: "status-sold" }
+                };
+
+                for(let step of historyArray) {
+                    let statusNum = parseInt(step.status);
+                    let dateStr = new Date(parseInt(step.timestamp) * 1000).toLocaleString('vi-VN');
+                    let statusConfig = statusMap[statusNum] || { text: "Không rõ", class: "status-transit" };
+                    timelineHTML += `<li class="timeline-item ${statusConfig.class}"><strong>${dateStr}</strong> - ${statusConfig.text}<div class="small text-muted">Ký bởi: ${step.updatedBy}</div></li>`;
+                }
+                timelineList.innerHTML = timelineHTML;
+            } catch (error) {
+                alert("Lỗi truy vấn dữ liệu Blockchain Sepolia!");
+            }
+        }
+
+        window.addEventListener('load', async () => {
+            await checkAndInitWeb3();
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', function (accounts) {
+                    if(accounts.length > 0) {
+                        walletAddress = accounts[0];
+                        document.getElementById('btnConnectMetamask').innerText = "Đã kết nối: " + walletAddress.substring(0,6) + "...";
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
