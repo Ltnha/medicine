@@ -65,3 +65,6 @@ CREATE TABLE LoThuoc (
         REFERENCES DoanhNghiep(id_doanh_nghiep)
         ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `admin` (ma_admin, ma_vi, id_doanh_nghiep, role)
+VALUES (1, '0x95222294dd7278aa3ddd389cc1e1d165cc4bafe5', 1, 'admin');

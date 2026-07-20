@@ -1,0 +1,46 @@
+==================================================================
+HUỚNG DẪN QUY TRÌNH LÙI COMMIT GIỮ NGUYÊN CODE (GIT RESET --SOFT)
+==================================================================
+
+Bản chất của lệnh "--soft": 
+Xóa tên commit trong lịch sử phát triển nhưng GIỮ NGUYÊN VẸN 100% 
+toàn bộ mã nguồn mới nhất hiện tại ở trạng thái chờ commit (Staging Area).
+
+------------------------------------------------------------------
+TRƯỜNG HỢP 1: LÙI LẠI X COMMIT GẦN NHẤT
+(Áp dụng khi vừa commit xong phát hiện sai tên hoặc muốn gộp vài commit gần đây)
+------------------------------------------------------------------
+Bước 1: Chạy lệnh lùi commit trên máy cục bộ (Local)
+    git reset --soft HEAD~X
+    (Thay X bằng số commit muốn xóa. Ví dụ: HEAD~1 hoặc HEAD~3)
+
+Bước 2: Tạo một commit mới duy nhất với nội dung chỉn chu
+    git commit -m "Tên commit mới sạch sẽ gọn gàng"
+
+Bước 3: Cập nhật lên GitHub
+    - Nếu commit lỗi CHƯA push lên GitHub:
+        git push origin main
+    - Nếu commit lỗi ĐÃ LỠ push lên GitHub:
+        git push origin main --force
+
+------------------------------------------------------------------
+TRƯỜNG HỢP 2: LÙI VỀ HẲN MỘT MÃ COMMIT CỤ THỂ TRONG QUÁ KHỨ
+(Áp dụng khi có quá nhiều commit linh tinh qua nhiều ngày, muốn gộp tất cả làm một)
+------------------------------------------------------------------
+Bước 1: Lấy mã Hash (7 ký tự đầu) của commit cũ nhất muốn làm mốc
+    (Ví dụ: da77263)
+
+Bước 2: Chạy lệnh lùi về vị trí NGAY TRƯỚC commit mốc đó
+    git reset --soft da77263~1
+
+Bước 3: Tạo commit mới đại diện cho toàn bộ đống code hiện tại
+    git commit -m "Commit mới gộp tất cả thay đổi"
+
+Bước 4: Ép GitHub xóa lịch sử cũ, nhận lịch sử mới sạch sẽ
+    git push origin main --force
+
+==================================================================
+LƯU Ý CỰ KỲ QUAN TRỌNG:
+Chỉ nên dùng lệnh '--force' khi làm việc một mình hoặc chắc chắn 
+chưa có ai trong nhóm kéo (pull) những commit lỗi kia về máy của họ.
+==================================================================
