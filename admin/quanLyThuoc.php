@@ -6,6 +6,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 require_once '../config/config.php';
 
+$conn = getDbConnection(); 
+
 // Lấy danh sách thuốc
 $stmt = $conn->prepare("SELECT * FROM Thuoc ORDER BY ngay_tao DESC");
 $stmt->execute();

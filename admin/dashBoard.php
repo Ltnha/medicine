@@ -11,6 +11,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 // 2. Kết nối cơ sở dữ liệu MySQL
 require_once '../config/config.php'; 
 
+$conn = getDbConnection(); 
+
 try {
     // Truy vấn lấy danh sách lịch sử tra cứu mới nhất
     $query = "SELECT * FROM LichSuTraCuu ORDER BY thoi_gian DESC LIMIT 50";

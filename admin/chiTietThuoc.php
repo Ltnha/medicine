@@ -6,6 +6,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 require_once '../config/config.php';
 
+$conn = getDbConnection(); 
+
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $stmt = $conn->prepare("SELECT * FROM Thuoc WHERE id_thuoc = ?");
 $stmt->execute([$id]);

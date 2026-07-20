@@ -10,6 +10,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 // 2. Kết nối cơ sở dữ liệu MySQL
 require_once '../config/config.php'; 
 
+$conn = getDbConnection(); 
+
 // 3. XỬ LÝ API AJAX (Ghi nhận lô thuốc sau khi đã có tx_hash từ Blockchain)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_lo_thuoc') {
     header('Content-Type: application/json');
