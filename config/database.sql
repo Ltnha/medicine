@@ -78,15 +78,13 @@ CREATE TABLE LoThuoc (
 -- =========================================================================
 -- BẢNG 5. LỊCH SỬ QUÉT MÃ QR THUỐC (Lưu IP người quét)
 -- =========================================================================
-CREATE TABLE IF NOT EXISTS LichSuQuet (
-    id_lich_su INT AUTO_INCREMENT PRIMARY KEY,
-    ma_tra_cuu VARCHAR(64) NOT NULL,
-    ip_nguoi_quet VARCHAR(45) NOT NULL,
-    thiet_bi TEXT DEFAULT NULL,
-    thoi_gian_quet TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT FK_LichSuQuet_LoThuoc FOREIGN KEY (ma_tra_cuu) 
-        REFERENCES LoThuoc(ma_tra_cuu) ON DELETE CASCADE
+CREATE TABLE LichSuQuet (
+  id_lich_su INT AUTO_INCREMENT PRIMARY KEY,
+  ma_tra_cuu VARCHAR(64) NOT NULL,
+  ip_nguoi_quet VARCHAR(45) NOT NULL,
+  thiet_bi TEXT DEFAULT NULL,
+  trang_thai ENUM('thanh_cong', 'that_bai') DEFAULT 'thanh_cong',
+  thoi_gian_quet TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- DỮ LIỆU DOANH NGHIỆP
