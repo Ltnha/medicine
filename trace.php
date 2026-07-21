@@ -57,14 +57,38 @@ if (!empty($ma_tra_cuu)) {
     // 3.2. LƯU LỊCH SỬ QUÉT
     $ip_nguoi_quet = getClientIP();
     $thiet_bi = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+    $current_log_id = 0; // Bổ sung biến lưu ID log
 
     try {
         $sql_log = "INSERT INTO LichSuQuet (ma_tra_cuu, ip_nguoi_quet, thiet_bi, trang_thai) VALUES (?, ?, ?, ?)";
         $stmt_log = $conn->prepare($sql_log);
         $stmt_log->execute([$ma_tra_cuu, $ip_nguoi_quet, $thiet_bi, $trang_thai_quet]);
+
+        // Lấy ID tự tăng vừa tạo
+        $current_log_id = $conn->lastInsertId();
     } catch (PDOException $e) {
         error_log("Lỗi ghi nhận IP quét: " . $e->getMessage());
     }
+}
+
+// BỔ SUNG: Xử lý AJAX cập nhật trạng thái lịch sử sau khi JS kiểm tra Blockchain xong
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_scan_status') {
+    header('Content-Type: application/json');
+    $log_id = intval($_POST['log_id'] ?? 0);
+    $status = $_POST['status'] ?? 'that_bai';
+
+    if ($log_id > 0) {
+        try {
+            $stmt_update = $conn->prepare("UPDATE LichSuQuet SET trang_thai = ? WHERE id_lich_su = ?");
+            $stmt_update->execute([$status, $log_id]);
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'ID bản ghi không hợp lệ']);
+    }
+    exit();
 }
 ?>
 
@@ -250,6 +274,8 @@ if (!empty($ma_tra_cuu)) {
 
     <?php if ($thong_tin_lo): ?>
         <script>
+            const currentLogId = <?= intval($current_log_id) ?>; // Lấy ID log từ PHP
+
             const mysqlData = {
                 maTraCuu: "<?= htmlspecialchars($thong_tin_lo['ma_tra_cuu']) ?>",
                 maLo: "<?= htmlspecialchars($thong_tin_lo['ma_lo']) ?>",
@@ -257,13 +283,25 @@ if (!empty($ma_tra_cuu)) {
                 hanSuDung: "<?= $thong_tin_lo['han_su_dung'] ?>"
             };
 
-            // Danh sách RPC public tốc độ cao cho mạng Sepolia
             const SEPOLIA_RPC_LIST = [
                 "https://rpc.ankr.com/eth_sepolia",
                 "https://ethereum-sepolia-rpc.publicnode.com",
-                "https://1rpc.io/sepolia",
-                "https://sepolia.gateway.tenderly.co"
+                "https://1rpc.io/sepolia"
             ];
+
+            // Hàm gửi AJAX cập nhật lại trạng thái vào MySQL
+            function updateLogStatusInDb(logId, newStatus) {
+                if (!logId) return;
+                const formData = new FormData();
+                formData.append('action', 'update_scan_status');
+                formData.append('log_id', logId);
+                formData.append('status', newStatus);
+
+                fetch('trace.php', {
+                    method: 'POST',
+                    body: formData
+                }).catch(err => console.error("Lỗi cập nhật log status:", err));
+            }
 
             async function verifyBlockchain() {
                 const badge = document.getElementById('auth-badge');
@@ -272,33 +310,33 @@ if (!empty($ma_tra_cuu)) {
                 let onChainData = null;
                 let isNotExistError = false;
 
-                // Thử lần lượt qua các cổng RPC cho tới khi đọc thành công
                 for (const rpcUrl of SEPOLIA_RPC_LIST) {
                     try {
                         const provider = new ethers.JsonRpcProvider(rpcUrl);
                         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 
                         onChainData = await contract.getBatch(mysqlData.maTraCuu);
-                        if (onChainData) break; // Lấy dữ liệu thành công -> Thoát vòng lặp
+                        if (onChainData) break;
                     } catch (err) {
                         const fullErrText = String(err.message || '') + String(err.reason || '') + JSON.stringify(err);
-
-                        // Nếu lỗi do Smart Contract phản hồi "Ma tra cuu khong ton tai"
                         if (fullErrText.includes("Ma tra cuu khong ton tai") || fullErrText.includes("execution reverted")) {
                             isNotExistError = true;
-                            break; // Dữ liệu không có trên chuỗi -> Dừng kiểm tra
+                            break;
                         }
                     }
                 }
 
-                // Trường hợp 1: Mã QR chưa từng được phát hành lên Blockchain
+                // Trường hợp 1: Mã QR chưa từng có trên Blockchain -> Đánh dấu Thất bại
                 if (isNotExistError) {
                     badge.className = "absolute top-0 right-0 bg-red-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
                     badge.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Mã QR chưa găm trên Blockchain!';
+
+                    // Cập nhật lại MySQL thành that_bai
+                    updateLogStatusInDb(currentLogId, 'that_bai');
                     return;
                 }
 
-                // Trường hợp 2: Lấy dữ liệu từ Blockchain thành công -> Tiến hành so sánh
+                // Trường hợp 2: Lấy dữ liệu thành công -> Kiểm tra tính toàn vẹn
                 if (onChainData) {
                     try {
                         const chainMaLo = onChainData[0];
@@ -306,37 +344,40 @@ if (!empty($ma_tra_cuu)) {
                         const chainHSDTimestamp = Number(onChainData[4]) * 1000;
                         const isCompromised = onChainData[5];
 
-                        // Đổi timestamp sang YYYY-MM-DD
                         const d = new Date(chainHSDTimestamp);
                         const chainHSDDate = d.getFullYear() + '-' +
                             String(d.getMonth() + 1).padStart(2, '0') + '-' +
                             String(d.getDate()).padStart(2, '0');
 
-                        // So sánh MySQL vs Blockchain
                         const isMaLoMatched = (mysqlData.maLo === chainMaLo);
                         const isHSDMatched = (mysqlData.hanSuDung === chainHSDDate);
                         const isIdThuocMatched = (mysqlData.idThuoc === chainIdThuoc);
 
-                        if (isCompromised) {
-                            badge.className = "absolute top-0 right-0 bg-red-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
-                            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Lô thuốc bị thu hồi!';
-                        } else if (isMaLoMatched && isHSDMatched && isIdThuocMatched) {
-                            // ✅ KHỚP DỮ LIỆU
+                        if (isCompromised || !isMaLoMatched || !isHSDMatched || !isIdThuocMatched) {
+                            // Lỗi thu hồi hoặc dữ liệu bị sửa đổi
+                            if (isCompromised) {
+                                badge.className = "absolute top-0 right-0 bg-red-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
+                                badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Lô thuốc bị thu hồi!';
+                            } else {
+                                badge.className = "absolute top-0 right-0 bg-amber-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
+                                badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Dữ liệu bị thay đổi!';
+                                if (alertBox) alertBox.classList.remove('hidden');
+                            }
+
+                            // Cập nhật CSDL thành that_bai
+                            updateLogStatusInDb(currentLogId, 'that_bai');
+                        } else {
+                            // Khớp 100% -> Giữ nguyên thanh_cong
                             badge.className = "absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
                             badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> Sản phẩm chính hãng (Khớp Blockchain)';
-                        } else {
-                            // ❌ DỮ LIỆU CSDL BỊ CAN THIỆP
-                            badge.className = "absolute top-0 right-0 bg-amber-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
-                            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Dữ liệu bị thay đổi!';
-                            if (alertBox) alertBox.classList.remove('hidden');
                         }
                     } catch (e) {
                         console.error("Lỗi parse:", e);
                     }
                 } else {
-                    // Trường hợp 3: Mất mạng hoặc sai địa chỉ Contract
                     badge.className = "absolute top-0 right-0 bg-gray-500 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
                     badge.innerHTML = '<i class="fa-solid fa-circle-question mr-1"></i> Không thể kết nối Blockchain';
+                    updateLogStatusInDb(currentLogId, 'that_bai');
                 }
             }
 
