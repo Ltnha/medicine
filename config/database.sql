@@ -74,6 +74,21 @@ CREATE TABLE LoThuoc (
         REFERENCES DoanhNghiep(id_doanh_nghiep) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- =========================================================================
+-- BẢNG 5. LỊCH SỬ QUÉT MÃ QR THUỐC (Lưu IP người quét)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS LichSuQuet (
+    id_lich_su INT AUTO_INCREMENT PRIMARY KEY,
+    ma_tra_cuu VARCHAR(64) NOT NULL,
+    ip_nguoi_quet VARCHAR(45) NOT NULL,
+    thiet_bi TEXT DEFAULT NULL,
+    thoi_gian_quet TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT FK_LichSuQuet_LoThuoc FOREIGN KEY (ma_tra_cuu) 
+        REFERENCES LoThuoc(ma_tra_cuu) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- DỮ LIỆU DOANH NGHIỆP
 INSERT INTO DoanhNghiep (id_doanh_nghiep, ten_doanh_nghiep, dia_chi_doanh_nghiep, ma_so_thue, loai_hinh) VALUES
 (1, 'Công ty Cổ phần Dược phẩm Trung ương 1', 'Số 160 Tôn Đức Thắng, Quận Đống Đa, Hà Nội', '0100100200', 'DangKy'),
