@@ -1,7 +1,7 @@
 // js/blockchain-tracker.js
 
 // 1. CẤU HÌNH CONTRACT
-const CONTRACT_ADDRESS = "0xa6FFB4d586d908D1B52F0182908f15C4903822C3"; //thay đổi khi deploy contract mới
+const CONTRACT_ADDRESS = "0xd3575806964f88DF19B07f59aF06b7b6011454C7"; //thay đổi khi deploy contract mới
 
 // ABI dạng mảng 1 lớp chuẩn
 const CONTRACT_ABI =[
@@ -21,15 +21,9 @@ const CONTRACT_ABI =[
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
-				"name": "maLo",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "idThuoc",
-				"type": "uint256"
+				"internalType": "bytes32",
+				"name": "dataHash",
+				"type": "bytes32"
 			}
 		],
 		"name": "BatchRegistered",
@@ -97,29 +91,9 @@ const CONTRACT_ABI =[
 		"name": "getBatch",
 		"outputs": [
 			{
-				"internalType": "string",
-				"name": "maLo",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "idThuoc",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "idCtyDangKy",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "idCtySanXuat",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "hanSuDung",
-				"type": "uint256"
+				"internalType": "bytes32",
+				"name": "dataHash",
+				"type": "bytes32"
 			},
 			{
 				"internalType": "bool",
@@ -151,29 +125,9 @@ const CONTRACT_ABI =[
 				"type": "string"
 			},
 			{
-				"internalType": "string",
-				"name": "_maLo",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idThuoc",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtyDangKy",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtySanXuat",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_hanSuDung",
-				"type": "uint256"
+				"internalType": "bytes32",
+				"name": "_dataHash",
+				"type": "bytes32"
 			}
 		],
 		"name": "registerBatch",
@@ -262,6 +216,15 @@ window.addEventListener('load', async () => {
     }
 });
 
+/**
+ * HÀM TẠO MÃ HASH CHUẨN TỪ DỮ LIỆU
+ * Quy tắc gộp chuỗi: maLo|idThuoc|idCtyDangKy|idCtySanXuat|hanSuDung
+ */
+function calculateBatchHash(maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung) {
+    const rawString = `${maLo}|${idThuoc}|${idCtyDangKy}|${idCtySanXuat}|${hanSuDung}`;
+    return ethers.solidityPackedKeccak256(["string"], [rawString]);
+}
+
 // 4. HÀM ĐĂNG KÝ LÔ THUỐC LÊN BLOCKCHAIN
 async function registerBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung) {
     if (!contract) {
@@ -269,19 +232,14 @@ async function registerBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, i
         if (!ok) throw new Error("Chưa kết nối được Smart Contract!");
     }
 
-    const timestampHSD = Math.floor(new Date(hanSuDung).getTime() / 1000);
+    // 1. Tạo mã Hash từ dữ liệu nhập vào
+    const dataHash = calculateBatchHash(maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung);
+    console.log("Chuỗi Hash được tạo ra:", dataHash);
 
-    // Kích hoạt MetaMask gọi hàm registerBatch
-    const tx = await contract.registerBatch(
-        maTraCuu,
-        maLo,
-        Number(idThuoc),
-        Number(idCtyDangKy),
-        Number(idCtySanXuat),
-        timestampHSD
-    );
+    // 2. Kích hoạt MetaMask gọi hàm registerBatch với dataHash
+    const tx = await contract.registerBatch(maTraCuu, dataHash);
 
     console.log("Đang xử lý... Tx Hash:", tx.hash);
-    await tx.wait(); // Đợi găm vào Block
+    await tx.wait(); 
     return tx.hash;
 }

@@ -1,17 +1,14 @@
 <?php
 session_start();
 
-// 1. Kiểm tra bảo mật Session phân quyền đăng nhập của Admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header('Location: ../login.php');
     exit();
 }
 
-// 2. Kết nối cơ sở dữ liệu MySQL
 require_once '../config/config.php';
 $conn = getDbConnection();
 
-// 3. XỬ LÝ API AJAX (Chỉ còn chức năng Thêm mới lô thuốc)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
 
@@ -42,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// 4. XỬ LÝ LỌC, TÌM KIẾM VÀ PHÂN TRANG
 $search = trim($_GET['s'] ?? '');
 $filter_thuoc = trim($_GET['id_thuoc'] ?? '');
 $filter_status = trim($_GET['status'] ?? '');
@@ -137,486 +133,74 @@ try {
             --shadow-modal: 0 20px 60px -12px rgba(15, 30, 25, .35);
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--gray-50);
-            color: var(--gray-900);
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            font-family: inherit;
-            cursor: pointer;
-        }
-
-        .app {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 256px;
-            flex-shrink: 0;
-            background: linear-gradient(180deg, var(--side-bg), var(--side-bg-2));
-            padding: 20px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 6px 8px 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, .07);
-        }
-
-        .brand-logo {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(155deg, var(--green-600), var(--green-900));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .brand-name {
-            font-weight: 800;
-            font-size: 15.5px;
-            color: #fff;
-        }
-
-        .brand-sub {
-            font-size: 11px;
-            color: #7c869a;
-        }
-
-        .nav-group {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .nav-label {
-            font-size: 10.5px;
-            font-weight: 700;
-            letter-spacing: .8px;
-            color: #5c667c;
-            text-transform: uppercase;
-            padding: 14px 12px 6px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 10.5px 12px;
-            border-radius: 10px;
-            font-size: 13.8px;
-            color: var(--side-text);
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, .05);
-            color: #fff;
-        }
-
-        .nav-item.active {
-            background: var(--side-active);
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .logout-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12.5px;
-            color: #d5362f;
-            padding: 8px 12px;
-            margin-top: auto;
-            border-radius: 8px;
-        }
-
-        .main {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 32px;
-            background: var(--white);
-            border-bottom: 1px solid var(--gray-200);
-            position: sticky;
-            top: 0;
-            z-index: 20;
-        }
-
-        .page-heading {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .page-heading .icon-wrap {
-            width: 38px;
-            height: 38px;
-            border-radius: 11px;
-            background: var(--green-50);
-            color: var(--green-700);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .page-title {
-            font-size: 19.5px;
-            font-weight: 800;
-        }
-
-        .content {
-            padding: 26px 32px 60px;
-            max-width: 1440px;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        .toolbar-card {
-            background: var(--white);
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-            padding: 16px 18px;
-            margin-bottom: 18px;
-        }
-
-        .filter-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            flex: 1;
-        }
-
-        .form-input {
-            border: 1px solid var(--gray-300);
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 13.5px;
-            outline: none;
-            background: #fff;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 13.5px;
-            font-weight: 600;
-            border-radius: 10px;
-            padding: 9px 16px;
-            border: 1px solid transparent;
-            transition: .15s;
-        }
-
-        .btn-primary {
-            background: var(--green-700);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: var(--green-900);
-        }
-
-        .btn-secondary {
-            background: var(--gray-100);
-            color: var(--gray-700);
-            border-color: var(--gray-300);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            border: 1px solid var(--gray-300);
-            color: var(--gray-700);
-        }
-
-        .btn-copy {
-            background: transparent;
-            border: none;
-            color: var(--gray-500);
-            cursor: pointer;
-            padding: 4px 6px;
-            border-radius: 4px;
-            transition: .15s;
-        }
-
-        .btn-copy:hover {
-            color: var(--green-700);
-            background: var(--green-50);
-        }
-
-        .table-card {
-            background: var(--white);
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-            overflow: hidden;
-        }
-
-        .table-scroll {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1000px;
-        }
-
-        thead th {
-            text-align: left;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--gray-500);
-            background: var(--gray-50);
-            padding: 13px 16px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        tbody td {
-            padding: 13px 16px;
-            border-bottom: 1px solid var(--gray-100);
-            font-size: 13.5px;
-            color: var(--gray-900);
-        }
-
-        .cell-strong {
-            font-weight: 600;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11.3px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
-
-        .badge::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        .badge-confirmed {
-            background: var(--green-50);
-            color: var(--green-700);
-        }
-
-        .badge-pending {
-            background: var(--orange-50);
-            color: var(--orange-600);
-        }
-
-        .badge-failed {
-            background: var(--red-50);
-            color: var(--red-600);
-        }
-
-        .btn-wallet {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13.5px;
-            font-weight: 600;
-            border-radius: 10px;
-            padding: 9.5px 16px;
-            background: var(--white);
-            border: 1px solid var(--green-700);
-            color: var(--green-700);
-        }
-
-        .btn-wallet.connected {
-            border-color: var(--blue-600);
-            color: var(--blue-600);
-            background: var(--blue-50);
-        }
-
-        .pagination-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            border-top: 1px solid var(--gray-200);
-            background: var(--white);
-        }
-
-        .pagination {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .page-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 32px;
-            height: 32px;
-            padding: 0 8px;
-            border-radius: 8px;
-            border: 1px solid var(--gray-300);
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--gray-700);
-        }
-
-        .page-link.active {
-            background: var(--green-700);
-            color: #fff;
-            border-color: var(--green-700);
-        }
-
-        .page-link.disabled {
-            opacity: .4;
-            pointer-events: none;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 25, 20, .5);
-            backdrop-filter: blur(2px);
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 40px 16px;
-            z-index: 100;
-            overflow-y: auto;
-        }
-
-        .modal-overlay.hidden {
-            display: none;
-        }
-
-        .modal-box {
-            background: var(--white);
-            border-radius: 22px;
-            width: 100%;
-            max-width: 860px;
-            box-shadow: var(--shadow-modal);
-            overflow: hidden;
-        }
-
-        .modal-head {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            padding: 22px 26px 18px;
-            border-bottom: 1px solid var(--gray-100);
-        }
-
-        .modal-head h2 {
-            font-size: 18px;
-            margin: 0;
-            font-weight: 800;
-        }
-
-        .modal-close {
-            width: 32px;
-            height: 32px;
-            border-radius: 9px;
-            border: 1px solid var(--gray-200);
-            background: var(--white);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gray-500);
-        }
-
-        .modal-body {
-            padding: 22px 26px;
-        }
-
-        .modal-foot {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding: 16px 26px;
-            border-top: 1px solid var(--gray-100);
-            background: var(--gray-50);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-field label {
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--gray-700);
-        }
-
-        .form-field input,
-        .form-field select {
-            border: 1px solid var(--gray-300);
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 13.5px;
-            outline: none;
-            width: 100%;
-        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--gray-50); color: var(--gray-900); }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; cursor: pointer; }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 256px; flex-shrink: 0; background: linear-gradient(180deg, var(--side-bg), var(--side-bg-2)); padding: 20px 14px; display: flex; flex-direction: column; gap: 22px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        .brand { display: flex; align-items: center; gap: 11px; padding: 6px 8px 14px; border-bottom: 1px solid rgba(255, 255, 255, .07); }
+        .brand-logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(155deg, var(--green-600), var(--green-900)); display: flex; align-items: center; justify-content: center; }
+        .brand-name { font-weight: 800; font-size: 15.5px; color: #fff; }
+        .brand-sub { font-size: 11px; color: #7c869a; }
+        .nav-group { display: flex; flex-direction: column; gap: 2px; }
+        .nav-label { font-size: 10.5px; font-weight: 700; letter-spacing: .8px; color: #5c667c; text-transform: uppercase; padding: 14px 12px 6px; }
+        .nav-item { display: flex; align-items: center; gap: 11px; padding: 10.5px 12px; border-radius: 10px; font-size: 13.8px; color: var(--side-text); }
+        .nav-item:hover { background: rgba(255, 255, 255, .05); color: #fff; }
+        .nav-item.active { background: var(--side-active); color: #fff; font-weight: 600; }
+        .logout-link { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #d5362f; padding: 8px 12px; margin-top: auto; border-radius: 8px; }
+        .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; background: var(--white); border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 20; }
+        .page-heading { display: flex; align-items: center; gap: 12px; }
+        .page-heading .icon-wrap { width: 38px; height: 38px; border-radius: 11px; background: var(--green-50); color: var(--green-700); display: flex; align-items: center; justify-content: center; }
+        .page-title { font-size: 19.5px; font-weight: 800; }
+        .content { padding: 26px 32px 60px; max-width: 1440px; width: 100%; margin: 0 auto; }
+        .toolbar-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 16px 18px; margin-bottom: 18px; }
+        .filter-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; width: 100%; }
+        .filter-group { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; flex: 1; }
+        .form-input { border: 1px solid var(--gray-300); border-radius: 10px; padding: 8px 12px; font-size: 13.5px; outline: none; background: #fff; }
+        .btn { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; border-radius: 10px; padding: 9px 16px; border: 1px solid transparent; transition: .15s; }
+        .btn-primary { background: var(--green-700); color: #fff; }
+        .btn-primary:hover { background: var(--green-900); }
+        .btn-secondary { background: var(--gray-100); color: var(--gray-700); border-color: var(--gray-300); }
+        .btn-ghost { background: transparent; border: 1px solid var(--gray-300); color: var(--gray-700); }
+        .btn-copy { background: transparent; border: none; color: var(--gray-500); cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: .15s; }
+        .btn-copy:hover { color: var(--green-700); background: var(--green-50); }
+        .table-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        thead th { text-align: left; font-size: 11px; font-weight: 700; color: var(--gray-500); background: var(--gray-50); padding: 13px 16px; border-bottom: 1px solid var(--gray-200); }
+        tbody td { padding: 13px 16px; border-bottom: 1px solid var(--gray-100); font-size: 13.5px; color: var(--gray-900); }
+        .cell-strong { font-weight: 600; }
+        .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.3px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+        .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .badge-confirmed { background: var(--green-50); color: var(--green-700); }
+        .badge-pending { background: var(--orange-50); color: var(--orange-600); }
+        .badge-failed { background: var(--red-50); color: var(--red-600); }
+        .btn-wallet { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; border-radius: 10px; padding: 9.5px 16px; background: var(--white); border: 1px solid var(--green-700); color: var(--green-700); }
+        .btn-wallet.connected { border-color: var(--blue-600); color: var(--blue-600); background: var(--blue-50); }
+        .pagination-container { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-top: 1px solid var(--gray-200); background: var(--white); }
+        .pagination { display: flex; gap: 6px; align-items: center; }
+        .page-link { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--gray-300); font-size: 13px; font-weight: 600; color: var(--gray-700); }
+        .page-link.active { background: var(--green-700); color: #fff; border-color: var(--green-700); }
+        .page-link.disabled { opacity: .4; pointer-events: none; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 25, 20, .5); backdrop-filter: blur(2px); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 100; overflow-y: auto; }
+        .modal-overlay.hidden { display: none; }
+        .modal-box { background: var(--white); border-radius: 22px; width: 100%; max-width: 860px; box-shadow: var(--shadow-modal); overflow: hidden; }
+        .modal-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 22px 26px 18px; border-bottom: 1px solid var(--gray-100); }
+        .modal-head h2 { font-size: 18px; margin: 0; font-weight: 800; }
+        .modal-close { width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--gray-200); background: var(--white); display: flex; align-items: center; justify-content: center; color: var(--gray-500); }
+        .modal-body { padding: 22px 26px; }
+        .modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 26px; border-top: 1px solid var(--gray-100); background: var(--gray-50); }
+        .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .form-field { display: flex; flex-direction: column; gap: 6px; }
+        .form-field label { font-size: 12.5px; font-weight: 600; color: var(--gray-700); }
+        .form-field input, .form-field select { border: 1px solid var(--gray-300); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; outline: none; width: 100%; }
     </style>
 </head>
 
 <body>
-
     <div class="app">
         <!-- SIDEBAR -->
         <aside class="sidebar">
@@ -651,14 +235,10 @@ try {
             </header>
 
             <section class="content">
-                <!-- THANH TÌM KIẾM & BỘ LỌC -->
                 <div class="toolbar-card">
                     <form method="GET" action="quanLyLoThuoc.php" class="filter-form">
                         <div class="filter-group">
-                            <input type="text" name="s" class="form-input" style="min-width: 220px;"
-                                placeholder="Tìm Mã lô, Mã QR, TxHash..."
-                                value="<?php echo htmlspecialchars($search); ?>">
-
+                            <input type="text" name="s" class="form-input" style="min-width: 220px;" placeholder="Tìm Mã lô, Mã QR, TxHash..." value="<?php echo htmlspecialchars($search); ?>">
                             <select name="id_thuoc" class="form-input">
                                 <option value="">-- Tất cả loại thuốc --</option>
                                 <?php foreach ($thuoc_options as $t): ?>
@@ -667,27 +247,23 @@ try {
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-
                             <select name="status" class="form-input">
                                 <option value="">-- Tất cả trạng thái --</option>
                                 <option value="confirmed" <?php echo $filter_status === 'confirmed' ? 'selected' : ''; ?>>Đã xác thực (Confirmed)</option>
                                 <option value="pending" <?php echo $filter_status === 'pending' ? 'selected' : ''; ?>>Đang xử lý (Pending)</option>
                                 <option value="failed" <?php echo $filter_status === 'failed' ? 'selected' : ''; ?>>Thất bại (Failed)</option>
                             </select>
-
                             <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Lọc</button>
                             <?php if (!empty($search) || !empty($filter_thuoc) || !empty($filter_status)): ?>
                                 <a href="quanLyLoThuoc.php" class="btn btn-ghost"><i class="fa-solid fa-rotate-left"></i> Xóa lọc</a>
                             <?php endif; ?>
                         </div>
-
                         <button type="button" class="btn btn-primary" onclick="openCreateModal()">
                             <i class="fa-solid fa-plus"></i> Phát hành lô thuốc mới
                         </button>
                     </form>
                 </div>
 
-                <!-- BẢNG DANH SÁCH LÔ THUỐC (ĐÃ BỎ CỘT THAO TÁC SỬA) -->
                 <div class="table-card">
                     <div class="table-scroll">
                         <table>
@@ -746,29 +322,17 @@ try {
                         </table>
                     </div>
 
-                    <!-- PHÂN TRANG -->
                     <?php if ($total_pages > 1): ?>
                         <div class="pagination-container">
                             <div style="font-size: 13px; color: var(--gray-500);">
                                 Hiển thị <?php echo count($lo_thuoc_list); ?> / <?php echo $total_records; ?> lô thuốc
                             </div>
                             <div class="pagination">
-                                <a href="?page=<?php echo $page - 1; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
-                                    class="page-link <?php echo $page <= 1 ? 'disabled' : ''; ?>">
-                                    <i class="fa-solid fa-chevron-left"></i>
-                                </a>
-
+                                <a href="?page=<?php echo $page - 1; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>" class="page-link <?php echo $page <= 1 ? 'disabled' : ''; ?>"><i class="fa-solid fa-chevron-left"></i></a>
                                 <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                                    <a href="?page=<?php echo $i; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
-                                        class="page-link <?php echo $page == $i ? 'active' : ''; ?>">
-                                        <?php echo $i; ?>
-                                    </a>
+                                    <a href="?page=<?php echo $i; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>" class="page-link <?php echo $page == $i ? 'active' : ''; ?>"><?php echo $i; ?></a>
                                 <?php endfor; ?>
-
-                                <a href="?page=<?php echo $page + 1; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
-                                    class="page-link <?php echo $page >= $total_pages ? 'disabled' : ''; ?>">
-                                    <i class="fa-solid fa-chevron-right"></i>
-                                </a>
+                                <a href="?page=<?php echo $page + 1; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>" class="page-link <?php echo $page >= $total_pages ? 'disabled' : ''; ?>"><i class="fa-solid fa-chevron-right"></i></a>
                             </div>
                         </div>
                     <?php endif; ?>
@@ -777,7 +341,7 @@ try {
         </main>
     </div>
 
-    <!-- MODAL FORM PHÁT HÀNH THÊM MỚI -->
+    <!-- MODAL -->
     <div class="modal-overlay hidden" id="modalForm">
         <div class="modal-box">
             <div class="modal-head">
@@ -854,7 +418,6 @@ try {
         </div>
     </div>
 
-    <!-- JS TƯƠNG TÁC BLOCKCHAIN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="../js/blockchain-tracker.js"></script>
 
@@ -863,9 +426,7 @@ try {
             if (!text) return;
             navigator.clipboard.writeText(text).then(() => {
                 alert("Đã sao chép mã TxHash vào bộ nhớ tạm:\n" + text);
-            }).catch(err => {
-                console.error("Lỗi khi sao chép:", err);
-            });
+            }).catch(err => console.error(err));
         }
 
         function openCreateModal() {
@@ -877,7 +438,6 @@ try {
             document.getElementById('modalForm').classList.add('hidden');
         }
 
-        // HÀM CHỈ CÒN XỬ LÝ PHÁT HÀNH MỚI LÊN BLOCKCHAIN
         async function publishToBlockchain() {
             if (!userAddress) {
                 alert("Bạn cần phải kết nối ví MetaMask trước!");
@@ -902,6 +462,7 @@ try {
             try {
                 alert("Hệ thống chuẩn bị gọi MetaMask ký duyệt, vui lòng xác nhận giao dịch trên cửa sổ ví...");
 
+                // Gọi hàm gửi mã Băm dữ liệu lên Blockchain
                 const txHash = await registerBatchOnBlockchain(ma_tra_cuu, ma_lo, id_thuoc, id_cty_dang_ky, id_cty_san_xuat, han_su_dung);
 
                 alert("Giao dịch Blockchain thành công!\nTxHash: " + txHash + "\nĐang đồng bộ thông tin vào MySQL...");
@@ -939,5 +500,4 @@ try {
         }
     </script>
 </body>
-
 </html>

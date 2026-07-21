@@ -3,39 +3,30 @@ pragma solidity ^0.8.0;
 
 contract DrugTracker {
     
-    // Định nghĩa cấu trúc một Lô thuốc tương ứng với nhu cầu truy xuất
+    // Cấu trúc lưu trữ siêu nhẹ: Chỉ lưu mã Hash và Trạng thái bảo mật
     struct Batch {
-        string maLo;
-        uint256 idThuoc;
-        uint256 idCtyDangKy;
-        uint256 idCtySanXuat;
-        uint256 hanSuDung;     // Lưu dưới dạng timestamp (uint256)
-        bool isCompromised;   // false = an toàn, true = giả mạo
-        bool isExist;         // Kiểm tra lô thuốc đã tồn tại chưa
+        bytes32 dataHash;     // Mã băm Keccak-256 chứa toàn bộ dữ liệu lô thuốc
+        bool isCompromised;   // false = an toàn, true = giả mạo / bị thu hồi
+        bool isExist;         // Kiểm tra lô thuốc đã tồn tại trên chain chưa
     }
 
-    // Dùng Mapping để tìm kiếm Lô thuốc nhanh chóng bằng ma_tra_cuu
+    // Mapping từ mã tra cứu (QR) sang dữ liệu Băm
     mapping(string => Batch) private batches;
     
-    // Địa chỉ của người quản trị (Deployer) có quyền quản lý danh sách Admin
     address public owner;
     mapping(address => bool) public admins;
 
-    // Các sự kiện (Events) để Web Frontend lắng nghe
-    event BatchRegistered(string indexed maTraCuu, string maLo, uint256 idThuoc);
+    event BatchRegistered(string indexed maTraCuu, bytes32 dataHash);
     event BatchStatusUpdated(string indexed maTraCuu, bool isCompromised);
 
     constructor() {
         owner = msg.sender;
-        admins[msg.sender] = true; // Khởi tạo owner cũng là admin
+        admins[msg.sender] = true;
     }
 
-    // 3 hàm xử lý
-
-    //Hàm phân quyền & Quản lý Admin 
     modifier onlyAdmin() {
         require(admins[msg.sender], "Ngoai le: Ban khong phai Admin");
-        _; //vị trí giữ chỗ
+        _;
     }
 
     function addAdmin(address _admin) public {
@@ -43,49 +34,36 @@ contract DrugTracker {
         admins[_admin] = true;
     }
 
-    //Hàm thêm lô thuốc mới
+    // Hàm đăng ký mới: Nhận trực tiếp chuỗi bytes32 dataHash đã được băm từ Frontend
     function registerBatch(
         string memory _maTraCuu,
-        string memory _maLo,
-        uint256 _idThuoc,
-        uint256 _idCtyDangKy,
-        uint256 _idCtySanXuat,
-        uint256 _hanSuDung
+        bytes32 _dataHash
     ) public onlyAdmin {
         require(!batches[_maTraCuu].isExist, "Loi: Ma tra cuu nay da ton tai");
 
         batches[_maTraCuu] = Batch({
-            maLo: _maLo,
-            idThuoc: _idThuoc,
-            idCtyDangKy: _idCtyDangKy,
-            idCtySanXuat: _idCtySanXuat,
-            hanSuDung: _hanSuDung,
+            dataHash: _dataHash,
             isCompromised: false,
             isExist: true
         });
 
-        emit BatchRegistered(_maTraCuu, _maLo, _idThuoc);
+        emit BatchRegistered(_maTraCuu, _dataHash);
     }
 
-    // Hàm cập nhật trạng thái bảo mật (Báo động giả mạo / Thu hồi lô thuốc)
+    // Hàm cập nhật trạng thái thu hồi / báo động
     function updateBatchStatus(string memory _maTraCuu, bool _isCompromised) public onlyAdmin {
         require(batches[_maTraCuu].isExist, "Ma tra cuu khong ton tai");
-        
         batches[_maTraCuu].isCompromised = _isCompromised;
-        
         emit BatchStatusUpdated(_maTraCuu, _isCompromised);
     }
-    //Hàm kiểm tra / truy xuất nguồn gốc
+
+    // Hàm kiểm tra / đọc dữ liệu từ Blockchain
     function getBatch(string memory _maTraCuu) public view returns (
-        string memory maLo,
-        uint256 idThuoc,
-        uint256 idCtyDangKy,
-        uint256 idCtySanXuat,
-        uint256 hanSuDung,
+        bytes32 dataHash,
         bool isCompromised
     ) {
         require(batches[_maTraCuu].isExist, "Ma tra cuu khong ton tai");
         Batch memory b = batches[_maTraCuu];
-        return (b.maLo, b.idThuoc, b.idCtyDangKy, b.idCtySanXuat, b.hanSuDung, b.isCompromised);
+        return (b.dataHash, b.isCompromised);
     }
 }

@@ -1,9 +1,7 @@
 <?php
-// 1. KẾT NỐI CƠ SỞ DỮ LIỆU
 require_once 'config/config.php';
 $conn = getDbConnection();
 
-// 2. HÀM LẤY ĐỊA CHỈ IP CHUẨN XÁC
 function getClientIP()
 {
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -19,14 +17,11 @@ function getClientIP()
     return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 }
 
-// 3. XỬ LÝ NHẬN MÃ QR / MÃ TRA CỨU TỪ URL HOẶC FORM
 $ma_tra_cuu = $_GET['qr'] ?? $_POST['med_code'] ?? '';
 $thong_tin_lo = null;
 $error_message = '';
 
 if (!empty($ma_tra_cuu)) {
-
-    // 3.1. TRUY VẤN THÔNG TIN LÔ THUỐC TỪ CSDL PHARMACHAIN
     try {
         $sql = "SELECT 
                     l.*, 
@@ -54,24 +49,20 @@ if (!empty($ma_tra_cuu)) {
         $error_message = "Có lỗi xảy ra trong quá trình truy vấn dữ liệu.";
     }
 
-    // 3.2. LƯU LỊCH SỬ QUÉT
     $ip_nguoi_quet = getClientIP();
     $thiet_bi = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
-    $current_log_id = 0; // Bổ sung biến lưu ID log
+    $current_log_id = 0;
 
     try {
         $sql_log = "INSERT INTO LichSuQuet (ma_tra_cuu, ip_nguoi_quet, thiet_bi, trang_thai) VALUES (?, ?, ?, ?)";
         $stmt_log = $conn->prepare($sql_log);
         $stmt_log->execute([$ma_tra_cuu, $ip_nguoi_quet, $thiet_bi, $trang_thai_quet]);
-
-        // Lấy ID tự tăng vừa tạo
         $current_log_id = $conn->lastInsertId();
     } catch (PDOException $e) {
         error_log("Lỗi ghi nhận IP quét: " . $e->getMessage());
     }
 }
 
-// BỔ SUNG: Xử lý AJAX cập nhật trạng thái lịch sử sau khi JS kiểm tra Blockchain xong
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_scan_status') {
     header('Content-Type: application/json');
     $log_id = intval($_POST['log_id'] ?? 0);
@@ -102,10 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0fdf4;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0fdf4; }
     </style>
 </head>
 
@@ -136,7 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     <main class="max-w-2xl mx-auto px-4 py-8 flex-grow w-full">
 
-        <!-- FORM TÌM KIẾM TRUY XUẤT -->
         <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border border-emerald-50">
             <h2 class="text-xl font-bold text-gray-800 text-center mb-2">Kiểm Tra Nguồn Gốc Thuốc</h2>
             <p class="text-sm text-gray-500 text-center mb-6">Quét mã QR trên vỏ hộp hoặc nhập mã tra cứu để kiểm tra thông tin xuất xứ.</p>
@@ -160,7 +147,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </form>
         </div>
 
-        <!-- HIỂN THỊ CẢNH BÁO NẾU KHÔNG CÓ TRONG DATABASE -->
         <?php if (!empty($error_message)): ?>
             <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-center shadow-sm mb-6">
                 <i class="fa-solid fa-triangle-exclamation mr-1 text-lg"></i>
@@ -168,11 +154,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </div>
         <?php endif; ?>
 
-        <!-- KẾT QUẢ TRUY XUẤT NGUỒN GỐC THUỐC -->
         <?php if ($thong_tin_lo): ?>
             <div id="result-container" class="space-y-6">
 
-                <!-- THÔNG TIN CHI TIẾT SẢN PHẨM -->
                 <div class="bg-white rounded-2xl shadow-md p-6 border border-emerald-50 relative overflow-hidden">
 
                     <div id="auth-badge" class="absolute top-0 right-0 bg-gray-400 text-white text-xs px-3 py-1 rounded-bl-xl font-medium">
@@ -181,10 +165,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
                     <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">Thông Tin Sản Phẩm</h3>
 
-                    <!-- CẢNH BÁO NẾU DỮ LIỆU BỊ SỬA TRÁI PHÉP -->
+                    <!-- KHUNG CẢNH BÁO GIẢ MẠO NẾU MÃ HASH KHÔNG KHỚP -->
                     <div id="tamper-alert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4 text-xs font-semibold">
                         <i class="fa-solid fa-circle-xmark text-lg mr-2 inline-block align-middle"></i>
-                        <span>CẢNH BÁO GIẢ MẠO: Dữ liệu Mã lô hoặc Hạn sử dụng trong CSDL không khớp với Sổ cái Blockchain bất biến!</span>
+                        <span>CẢNH BÁO GIẢ MẠO: Dữ liệu trong CSDL đã bị chỉnh sửa trái phép! Mã băm Data Hash không khớp với Sổ cái Blockchain.</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4 text-sm">
@@ -233,7 +217,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     </div>
                 </div>
 
-                <!-- LỊCH SỬ / HÀNH TRÌNH CHUỖI CUNG ỨNG -->
                 <div class="bg-white rounded-2xl shadow-md p-6 border border-emerald-50">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">Hành Trình Chuỗi Cung Ứng</h3>
 
@@ -268,18 +251,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <p class="text-center text-xs text-gray-400">© 2026 PharmaChain. Ứng dụng quản lý chuỗi cung ứng dược phẩm trên Blockchain.</p>
     </footer>
 
-    <!--THƯ VIỆN CẦN THIẾT ĐỂ KẾT NỐI VÀ ĐỐI CHIẾU BLOCKCHAIN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="js/blockchain-tracker.js"></script>
 
     <?php if ($thong_tin_lo): ?>
         <script>
-            const currentLogId = <?= intval($current_log_id) ?>; // Lấy ID log từ PHP
+            const currentLogId = <?= intval($current_log_id) ?>;
 
+            // Lấy dữ liệu thực tế từ MySQL backend
             const mysqlData = {
                 maTraCuu: "<?= htmlspecialchars($thong_tin_lo['ma_tra_cuu']) ?>",
                 maLo: "<?= htmlspecialchars($thong_tin_lo['ma_lo']) ?>",
                 idThuoc: <?= intval($thong_tin_lo['id_thuoc']) ?>,
+                idCtyDangKy: <?= intval($thong_tin_lo['id_cty_dang_ky']) ?>,
+                idCtySanXuat: <?= intval($thong_tin_lo['id_cty_san_xuat']) ?>,
                 hanSuDung: "<?= $thong_tin_lo['han_su_dung'] ?>"
             };
 
@@ -289,7 +274,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 "https://1rpc.io/sepolia"
             ];
 
-            // Hàm gửi AJAX cập nhật lại trạng thái vào MySQL
             function updateLogStatusInDb(logId, newStatus) {
                 if (!logId) return;
                 const formData = new FormData();
@@ -326,35 +310,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     }
                 }
 
-                // Trường hợp 1: Mã QR chưa từng có trên Blockchain -> Đánh dấu Thất bại
+                // 1. Trường hợp không tìm thấy trên Blockchain
                 if (isNotExistError) {
                     badge.className = "absolute top-0 right-0 bg-red-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
                     badge.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Mã QR chưa găm trên Blockchain!';
-
-                    // Cập nhật lại MySQL thành that_bai
                     updateLogStatusInDb(currentLogId, 'that_bai');
                     return;
                 }
 
-                // Trường hợp 2: Lấy dữ liệu thành công -> Kiểm tra tính toàn vẹn
+                // 2. Tự tính toán lại Hash từ dữ liệu MySQL đang hiển thị
+                const recalculatedHash = calculateBatchHash(
+                    mysqlData.maLo,
+                    mysqlData.idThuoc,
+                    mysqlData.idCtyDangKy,
+                    mysqlData.idCtySanXuat,
+                    mysqlData.hanSuDung
+                );
+
+                // 3. Đối chiếu Hash local với Hash lưu trên Blockchain
                 if (onChainData) {
                     try {
-                        const chainMaLo = onChainData[0];
-                        const chainIdThuoc = Number(onChainData[1]);
-                        const chainHSDTimestamp = Number(onChainData[4]) * 1000;
-                        const isCompromised = onChainData[5];
+                        const chainHash = onChainData[0];
+                        const isCompromised = onChainData[1];
 
-                        const d = new Date(chainHSDTimestamp);
-                        const chainHSDDate = d.getFullYear() + '-' +
-                            String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                            String(d.getDate()).padStart(2, '0');
+                        // So sánh 2 mã Hash
+                        const isHashMatched = (recalculatedHash.toLowerCase() === chainHash.toLowerCase());
 
-                        const isMaLoMatched = (mysqlData.maLo === chainMaLo);
-                        const isHSDMatched = (mysqlData.hanSuDung === chainHSDDate);
-                        const isIdThuocMatched = (mysqlData.idThuoc === chainIdThuoc);
-
-                        if (isCompromised || !isMaLoMatched || !isHSDMatched || !isIdThuocMatched) {
-                            // Lỗi thu hồi hoặc dữ liệu bị sửa đổi
+                        if (isCompromised || !isHashMatched) {
                             if (isCompromised) {
                                 badge.className = "absolute top-0 right-0 bg-red-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
                                 badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Lô thuốc bị thu hồi!';
@@ -363,16 +345,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Dữ liệu bị thay đổi!';
                                 if (alertBox) alertBox.classList.remove('hidden');
                             }
-
-                            // Cập nhật CSDL thành that_bai
                             updateLogStatusInDb(currentLogId, 'that_bai');
                         } else {
-                            // Khớp 100% -> Giữ nguyên thanh_cong
+                            // Khớp Hash 100%
                             badge.className = "absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
-                            badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> Sản phẩm chính hãng (Khớp Blockchain)';
+                            badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> Sản phẩm chính hãng (Khớp Hash 100%)';
                         }
                     } catch (e) {
-                        console.error("Lỗi parse:", e);
+                        console.error("Lỗi parse dữ liệu:", e);
                     }
                 } else {
                     badge.className = "absolute top-0 right-0 bg-gray-500 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
@@ -386,5 +366,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <?php endif; ?>
 
 </body>
-
 </html>
