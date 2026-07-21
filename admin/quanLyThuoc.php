@@ -53,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $msg_error = "Lỗi: " . $e->getMessage();
         }
     }
+    // 3. [QUAN TRỌNG] Chuyển hướng lại chính trang này bằng phương thức GET
+    header("Location: quanLyThuoc.php");
+    exit(); // Dừng ngay chương trình sau khi chuyển hướng
 }
 
 // 3. XỬ LÝ ACTION: CẬP NHẬT THUỐC 
