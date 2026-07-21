@@ -1,18 +1,5 @@
 [
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_admin",
-				"type": "address"
-			}
-		],
-		"name": "addAdmin",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
@@ -64,93 +51,12 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "_maTraCuu",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_maLo",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idThuoc",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtyDangKy",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtySanXuat",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_hanSuDung",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "_admin",
+				"type": "address"
 			}
 		],
-		"name": "registerBatch",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_maTraCuu",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_maLo",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idThuoc",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtyDangKy",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtySanXuat",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_hanSuDung",
-				"type": "uint256"
-			}
-		],
-		"name": "updateBatch",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_maTraCuu",
-				"type": "string"
-			},
-			{
-				"internalType": "bool",
-				"name": "_isCompromised",
-				"type": "bool"
-			}
-		],
-		"name": "updateBatchStatus",
+		"name": "addAdmin",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -229,6 +135,62 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_maTraCuu",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_maLo",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idThuoc",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idCtyDangKy",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idCtySanXuat",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_hanSuDung",
+				"type": "uint256"
+			}
+		],
+		"name": "registerBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_maTraCuu",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "_isCompromised",
+				"type": "bool"
+			}
+		],
+		"name": "updateBatchStatus",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]

@@ -11,7 +11,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 require_once '../config/config.php';
 $conn = getDbConnection();
 
-// 3. XỬ LÝ API AJAX (Lưu mới HOẶC Cập nhật lô thuốc sau khi ký Blockchain thành công)
+// 3. XỬ LÝ API AJAX (Chỉ còn chức năng Thêm mới lô thuốc)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
 
@@ -39,30 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             echo json_encode(['success' => false, 'message' => 'Lỗi MySQL Backend: ' . $e->getMessage()]);
         }
         exit();
-    } else if ($_POST['action'] === 'update_lo_thuoc') {
-        try {
-            $id_thuoc = $_POST['id_thuoc'];
-            $ma_lo = $_POST['ma_lo'];
-            $ma_tra_cuu = $_POST['ma_tra_cuu'];
-            $tx_hash = $_POST['tx_hash'];
-            $id_cty_dang_ky = $_POST['id_cty_dang_ky'];
-            $id_cty_san_xuat = $_POST['id_cty_san_xuat'];
-            $ngay_san_xuat = $_POST['ngay_san_xuat'];
-            $han_su_dung = $_POST['han_su_dung'];
-            $so_luong_ton = $_POST['so_luong_ton'];
-            $gia_nhap = $_POST['gia_nhap'];
-
-            $update_query = "UPDATE LoThuoc 
-                             SET id_thuoc = ?, ma_lo = ?, tx_hash = ?, id_cty_dang_ky = ?, id_cty_san_xuat = ?, ngay_san_xuat = ?, han_su_dung = ?, so_luong_ton = ?, gia_nhap = ? 
-                             WHERE ma_tra_cuu = ?";
-            $stmt = $conn->prepare($update_query);
-            $stmt->execute([$id_thuoc, $ma_lo, $tx_hash, $id_cty_dang_ky, $id_cty_san_xuat, $ngay_san_xuat, $han_su_dung, $so_luong_ton, $gia_nhap, $ma_tra_cuu]);
-
-            echo json_encode(['success' => true, 'message' => 'Cập nhật lô thuốc và đồng bộ Blockchain thành công!']);
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Lỗi MySQL Backend: ' . $e->getMessage()]);
-        }
-        exit();
     }
 }
 
@@ -71,10 +47,9 @@ $search = trim($_GET['s'] ?? '');
 $filter_thuoc = trim($_GET['id_thuoc'] ?? '');
 $filter_status = trim($_GET['status'] ?? '');
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$limit = 10; // Số bản ghi trên mỗi trang
+$limit = 10;
 $offset = ($page - 1) * $limit;
 
-// Dựng câu lệnh WHERE linh hoạt
 $where_clauses = ["1=1"];
 $params = [];
 
@@ -97,13 +72,11 @@ if ($filter_status !== '') {
 $where_sql = implode(" AND ", $where_clauses);
 
 try {
-    // Đếm tổng số lượng bản ghi để phân trang
     $count_stmt = $conn->prepare("SELECT COUNT(*) FROM LoThuoc l JOIN Thuoc t ON l.id_thuoc = t.id_thuoc WHERE $where_sql");
     $count_stmt->execute($params);
     $total_records = $count_stmt->fetchColumn();
     $total_pages = ceil($total_records / $limit);
 
-    // Truy vấn dữ liệu có phân trang (LIMIT & OFFSET)
     $sql = "SELECT l.*, t.ten_thuoc 
             FROM LoThuoc l 
             JOIN Thuoc t ON l.id_thuoc = t.id_thuoc 
@@ -114,12 +87,10 @@ try {
     $lo_stmt->execute($params);
     $lo_thuoc_list = $lo_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Lấy dữ liệu danh mục thuốc cho dropdown lọc & modal
     $thuoc_stmt = $conn->prepare("SELECT id_thuoc, ten_thuoc FROM Thuoc WHERE trang_thai = 1");
     $thuoc_stmt->execute();
     $thuoc_options = $thuoc_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Lấy danh sách doanh nghiệp
     $dn_stmt = $conn->prepare("SELECT id_doanh_nghiep, ten_doanh_nghiep, loai_hinh FROM DoanhNghiep");
     $dn_stmt->execute();
     $doanh_nghiep_list = $dn_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -143,11 +114,9 @@ try {
             --green-700: #137a4a;
             --green-600: #189956;
             --green-50: #e9f7ef;
-            --green-100: #d7f0e1;
             --orange-600: #c2650f;
             --orange-50: #fdf1e4;
             --red-600: #d5362f;
-            --red-700: #b5271f;
             --red-50: #fdeceb;
             --blue-600: #2b5fd9;
             --blue-50: #eef4ff;
@@ -337,7 +306,6 @@ try {
             margin: 0 auto;
         }
 
-        /* Toolbar & Filters */
         .toolbar-card {
             background: var(--white);
             border: 1px solid var(--gray-200);
@@ -373,10 +341,6 @@ try {
             background: #fff;
         }
 
-        .form-input:focus {
-            border-color: var(--green-600);
-        }
-
         .btn {
             display: inline-flex;
             align-items: center;
@@ -404,23 +368,10 @@ try {
             border-color: var(--gray-300);
         }
 
-        .btn-secondary:hover {
-            background: var(--gray-200);
-        }
-
         .btn-ghost {
             background: transparent;
             border: 1px solid var(--gray-300);
             color: var(--gray-700);
-        }
-
-        .btn-edit {
-            background: var(--blue-50);
-            color: var(--blue-600);
-            border: 1px solid rgba(43, 95, 217, .2);
-            padding: 5px 10px;
-            font-size: 12px;
-            border-radius: 6px;
         }
 
         .btn-copy {
@@ -453,7 +404,7 @@ try {
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1100px;
+            min-width: 1000px;
         }
 
         thead th {
@@ -529,7 +480,6 @@ try {
             background: var(--blue-50);
         }
 
-        /* Pagination CSS */
         .pagination-container {
             display: flex;
             align-items: center;
@@ -662,12 +612,6 @@ try {
             outline: none;
             width: 100%;
         }
-
-        .form-field input:disabled {
-            background-color: var(--gray-100);
-            color: var(--gray-500);
-            cursor: not-allowed;
-        }
     </style>
 </head>
 
@@ -711,12 +655,10 @@ try {
                 <div class="toolbar-card">
                     <form method="GET" action="quanLyLoThuoc.php" class="filter-form">
                         <div class="filter-group">
-                            <!-- Ô Tìm Kiếm Từ Khóa -->
                             <input type="text" name="s" class="form-input" style="min-width: 220px;"
                                 placeholder="Tìm Mã lô, Mã QR, TxHash..."
                                 value="<?php echo htmlspecialchars($search); ?>">
 
-                            <!-- Lọc Theo Tên Thuốc -->
                             <select name="id_thuoc" class="form-input">
                                 <option value="">-- Tất cả loại thuốc --</option>
                                 <?php foreach ($thuoc_options as $t): ?>
@@ -726,7 +668,6 @@ try {
                                 <?php endforeach; ?>
                             </select>
 
-                            <!-- Lọc Theo Trạng Thái Blockchain -->
                             <select name="status" class="form-input">
                                 <option value="">-- Tất cả trạng thái --</option>
                                 <option value="confirmed" <?php echo $filter_status === 'confirmed' ? 'selected' : ''; ?>>Đã xác thực (Confirmed)</option>
@@ -746,7 +687,7 @@ try {
                     </form>
                 </div>
 
-                <!-- BẢNG DANH SÁCH LÔ THUỐC -->
+                <!-- BẢNG DANH SÁCH LÔ THUỐC (ĐÃ BỎ CỘT THAO TÁC SỬA) -->
                 <div class="table-card">
                     <div class="table-scroll">
                         <table>
@@ -760,14 +701,13 @@ try {
                                     <th>Số Lượng Tồn</th>
                                     <th>Trạng Thái Chuỗi</th>
                                     <th>Mã Giao Dịch (TxHash)</th>
-                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($lo_thuoc_list)): ?>
                                     <tr>
-                                        <td colspan="9" style="text-align: center; color: var(--gray-500); padding: 30px;">
-                                            Khồng tìm thấy dữ liệu lô thuốc phù hợp!
+                                        <td colspan="8" style="text-align: center; color: var(--gray-500); padding: 30px;">
+                                            Không tìm thấy dữ liệu lô thuốc phù hợp!
                                         </td>
                                     </tr>
                                 <?php else: ?>
@@ -792,18 +732,12 @@ try {
                                                     <span title="<?php echo htmlspecialchars($lo['tx_hash']); ?>">
                                                         <?php echo substr($lo['tx_hash'], 0, 8) . '...' . substr($lo['tx_hash'], -6); ?>
                                                     </span>
-                                                    <!-- NÚT COPY NHANH MÃ HASH -->
                                                     <button class="btn-copy" onclick="copyToClipboard('<?php echo htmlspecialchars($lo['tx_hash']); ?>')" title="Copy mã TxHash đầy đủ">
                                                         <i class="fa-regular fa-copy"></i>
                                                     </button>
                                                 <?php else: ?>
                                                     <span style="color: var(--gray-300);">Chưa có</span>
                                                 <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-edit" onclick='openEditModal(<?php echo json_encode($lo); ?>)'>
-                                                    <i class="fa-solid fa-pen-to-square"></i> Sửa
-                                                </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -819,13 +753,11 @@ try {
                                 Hiển thị <?php echo count($lo_thuoc_list); ?> / <?php echo $total_records; ?> lô thuốc
                             </div>
                             <div class="pagination">
-                                <!-- Nút Trước -->
                                 <a href="?page=<?php echo $page - 1; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
                                     class="page-link <?php echo $page <= 1 ? 'disabled' : ''; ?>">
                                     <i class="fa-solid fa-chevron-left"></i>
                                 </a>
 
-                                <!-- Các con số trang -->
                                 <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                                     <a href="?page=<?php echo $i; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
                                         class="page-link <?php echo $page == $i ? 'active' : ''; ?>">
@@ -833,7 +765,6 @@ try {
                                     </a>
                                 <?php endfor; ?>
 
-                                <!-- Nút Sau -->
                                 <a href="?page=<?php echo $page + 1; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
                                     class="page-link <?php echo $page >= $total_pages ? 'disabled' : ''; ?>">
                                     <i class="fa-solid fa-chevron-right"></i>
@@ -846,17 +777,15 @@ try {
         </main>
     </div>
 
-    <!-- MODAL FORM PHÁT HÀNH / CHỈNH SỬA -->
+    <!-- MODAL FORM PHÁT HÀNH THÊM MỚI -->
     <div class="modal-overlay hidden" id="modalForm">
         <div class="modal-box">
             <div class="modal-head">
-                <h2 id="modalTitle">Phát hành lô thuốc mới lên Sổ cái Blockchain</h2>
+                <h2>Phát hành lô thuốc mới lên Sổ cái Blockchain</h2>
                 <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <form id="loThuocForm">
-                    <input type="hidden" id="form_mode" value="create">
-
                     <div class="form-grid">
                         <div class="form-field">
                             <label>Chọn loại thuốc sản xuất <span style="color:red;">*</span></label>
@@ -930,7 +859,6 @@ try {
     <script src="../js/blockchain-tracker.js"></script>
 
     <script>
-        // HÀM COPY MÃ TXHASH VÀO CLIPBOARD
         function copyToClipboard(text) {
             if (!text) return;
             navigator.clipboard.writeText(text).then(() => {
@@ -941,31 +869,7 @@ try {
         }
 
         function openCreateModal() {
-            document.getElementById('form_mode').value = 'create';
-            document.getElementById('modalTitle').innerText = 'Phát hành lô thuốc mới lên Sổ cái Blockchain';
             document.getElementById('loThuocForm').reset();
-
-            const maTraCuuInput = document.getElementById('ma_tra_cuu');
-            maTraCuuInput.disabled = false;
-            document.getElementById('modalForm').classList.remove('hidden');
-        }
-
-        function openEditModal(lo) {
-            document.getElementById('form_mode').value = 'edit';
-            document.getElementById('modalTitle').innerText = 'Chỉnh sửa lô thuốc & Cập nhật Blockchain';
-
-            document.getElementById('id_thuoc').value = lo.id_thuoc;
-            document.getElementById('ma_lo').value = lo.ma_lo;
-            document.getElementById('ma_tra_cuu').value = lo.ma_tra_cuu;
-            document.getElementById('gia_nhap').value = lo.gia_nhap;
-            document.getElementById('id_cty_dang_ky').value = lo.id_cty_dang_ky;
-            document.getElementById('id_cty_san_xuat').value = lo.id_cty_san_xuat;
-            document.getElementById('ngay_san_xuat').value = lo.ngay_san_xuat;
-            document.getElementById('han_su_dung').value = lo.han_su_dung;
-            document.getElementById('so_luong_ton').value = lo.so_luong_ton;
-
-            const maTraCuuInput = document.getElementById('ma_tra_cuu');
-            maTraCuuInput.disabled = true;
             document.getElementById('modalForm').classList.remove('hidden');
         }
 
@@ -973,13 +877,13 @@ try {
             document.getElementById('modalForm').classList.add('hidden');
         }
 
+        // HÀM CHỈ CÒN XỬ LÝ PHÁT HÀNH MỚI LÊN BLOCKCHAIN
         async function publishToBlockchain() {
             if (!userAddress) {
                 alert("Bạn cần phải kết nối ví MetaMask trước!");
                 return;
             }
 
-            const mode = document.getElementById('form_mode').value;
             const id_thuoc = document.getElementById('id_thuoc').value;
             const ma_lo = document.getElementById('ma_lo').value;
             const ma_tra_cuu = document.getElementById('ma_tra_cuu').value;
@@ -998,17 +902,12 @@ try {
             try {
                 alert("Hệ thống chuẩn bị gọi MetaMask ký duyệt, vui lòng xác nhận giao dịch trên cửa sổ ví...");
 
-                let txHash;
-                if (mode === 'create') {
-                    txHash = await registerBatchOnBlockchain(ma_tra_cuu, ma_lo, id_thuoc, id_cty_dang_ky, id_cty_san_xuat, han_su_dung);
-                } else {
-                    txHash = await updateBatchOnBlockchain(ma_tra_cuu, ma_lo, id_thuoc, id_cty_dang_ky, id_cty_san_xuat, han_su_dung);
-                }
+                const txHash = await registerBatchOnBlockchain(ma_tra_cuu, ma_lo, id_thuoc, id_cty_dang_ky, id_cty_san_xuat, han_su_dung);
 
-                alert("Giao dịch Blockchain thành công!\nTxHash mới: " + txHash + "\nĐang đồng bộ thông tin vào MySQL...");
+                alert("Giao dịch Blockchain thành công!\nTxHash: " + txHash + "\nĐang đồng bộ thông tin vào MySQL...");
 
                 const formData = new FormData();
-                formData.append('action', mode === 'create' ? 'save_lo_thuoc' : 'update_lo_thuoc');
+                formData.append('action', 'save_lo_thuoc');
                 formData.append('id_thuoc', id_thuoc);
                 formData.append('ma_lo', ma_lo);
                 formData.append('ma_tra_cuu', ma_tra_cuu);

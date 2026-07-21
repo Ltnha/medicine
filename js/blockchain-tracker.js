@@ -1,23 +1,10 @@
 // js/blockchain-tracker.js
 
 // 1. CẤU HÌNH CONTRACT
-const CONTRACT_ADDRESS = "0x16FFaD3183B23D06111852c170a3c8Fd952F4A9e"; //thay đổi khi deploy contract mới
+const CONTRACT_ADDRESS = "0xa6FFB4d586d908D1B52F0182908f15C4903822C3"; //thay đổi khi deploy contract mới
 
 // ABI dạng mảng 1 lớp chuẩn
 const CONTRACT_ABI =[
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_admin",
-				"type": "address"
-			}
-		],
-		"name": "addAdmin",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -70,93 +57,12 @@ const CONTRACT_ABI =[
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "_maTraCuu",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_maLo",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idThuoc",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtyDangKy",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtySanXuat",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_hanSuDung",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "_admin",
+				"type": "address"
 			}
 		],
-		"name": "registerBatch",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_maTraCuu",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_maLo",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idThuoc",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtyDangKy",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtySanXuat",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_hanSuDung",
-				"type": "uint256"
-			}
-		],
-		"name": "updateBatch",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_maTraCuu",
-				"type": "string"
-			},
-			{
-				"internalType": "bool",
-				"name": "_isCompromised",
-				"type": "bool"
-			}
-		],
-		"name": "updateBatchStatus",
+		"name": "addAdmin",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -235,6 +141,62 @@ const CONTRACT_ABI =[
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_maTraCuu",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_maLo",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idThuoc",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idCtyDangKy",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idCtySanXuat",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_hanSuDung",
+				"type": "uint256"
+			}
+		],
+		"name": "registerBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_maTraCuu",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "_isCompromised",
+				"type": "bool"
+			}
+		],
+		"name": "updateBatchStatus",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ];
@@ -322,22 +284,4 @@ async function registerBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, i
     console.log("Đang xử lý... Tx Hash:", tx.hash);
     await tx.wait(); // Đợi găm vào Block
     return tx.hash;
-}
-// chỉnh sửa
-async function updateBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung) {
-    if (!contract) await initBlockchain();
-    const timestampHSD = Math.floor(new Date(hanSuDung).getTime() / 1000);
-
-    // Ký giao dịch sửa trên MetaMask
-    const tx = await contract.updateBatch(
-        maTraCuu,
-        maLo,
-        Number(idThuoc),
-        Number(idCtyDangKy),
-        Number(idCtySanXuat),
-        timestampHSD
-    );
-
-    await tx.wait(); // Chờ Blockchain xác nhận
-    return tx.hash;  // Trả về mã tx_hash MỚI
 }
