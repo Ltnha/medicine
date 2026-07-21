@@ -24,20 +24,8 @@ $thong_tin_lo = null;
 $error_message = '';
 
 if (!empty($ma_tra_cuu)) {
-    // 3.1. LẤY IP VÀ LƯU VÀO CSDL (BẢNG LichSuQuet)
-    $ip_nguoi_quet = getClientIP();
-    $thiet_bi = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
-
-    try {
-        $sql_log = "INSERT INTO LichSuQuet (ma_tra_cuu, ip_nguoi_quet, thiet_bi) VALUES (?, ?, ?)";
-        $stmt_log = $conn->prepare($sql_log);
-        $stmt_log->execute([$ma_tra_cuu, $ip_nguoi_quet, $thiet_bi]);
-    } catch (PDOException $e) {
-        // Ghi log ngầm nếu chưa tạo bảng LichSuQuet hoặc gặp lỗi nhẹ, không ngắt giao diện người dùng
-        error_log("Lỗi ghi nhận IP quét: " . $e->getMessage());
-    }
-
-    // 3.2. TRUY VẤN THÔNG TIN LÔ THUỐC TỪ CSDL PHARMACHAIN
+    
+    // 3.1. TRUY VẤN THÔNG TIN LÔ THUỐC TỪ CSDL PHARMACHAIN
     try {
         $sql = "SELECT 
                     l.*, 
@@ -55,11 +43,28 @@ if (!empty($ma_tra_cuu)) {
         $stmt->execute([$ma_tra_cuu]);
         $thong_tin_lo = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        // Xác định trạng thái tra cứu
+        $trang_thai_quet = $thong_tin_lo ? 'thanh_cong' : 'that_bai';
+
         if (!$thong_tin_lo) {
-            $error_message = "Không tìm thấy dữ liệu cho mã tra cứu: <strong>" . htmlspecialchars($ma_tra_cuu) . "</strong>. Vui lòng cảnh giác hàng giả!";
+            $error_message = "CẢNH BÁO: Không tìm thấy dữ liệu cho mã tra cứu <strong>" . htmlspecialchars($ma_tra_cuu) . "</strong>. Mã này có thể là hàng giả hoặc chưa đăng ký!";
         }
     } catch (PDOException $e) {
-        $error_message = "Có lỗi xảy ra trong quá trình truy vấn dữ liệu từ hệ thống.";
+        $trang_thai_quet = 'that_bai';
+        $error_message = "Có lỗi xảy ra trong quá trình truy vấn dữ liệu.";
+    }
+
+    // 3.2. LƯU LỊCH SỬ QUÉT (LƯU CẢ THÀNH CÔNG LẪN THẤT BẠI)
+    $ip_nguoi_quet = getClientIP();
+    $thiet_bi = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+
+    try {
+        // Lưu lịch sử kèm trạng thái quét (thanh_cong / that_bai)
+        $sql_log = "INSERT INTO LichSuQuet (ma_tra_cuu, ip_nguoi_quet, thiet_bi, trang_thai) VALUES (?, ?, ?, ?)";
+        $stmt_log = $conn->prepare($sql_log);
+        $stmt_log->execute([$ma_tra_cuu, $ip_nguoi_quet, $thiet_bi, $trang_thai_quet]);
+    } catch (PDOException $e) {
+        error_log("Lỗi ghi nhận IP quét: " . $e->getMessage());
     }
 }
 ?>
