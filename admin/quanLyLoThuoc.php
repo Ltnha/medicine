@@ -9,50 +9,117 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 // 2. Kết nối cơ sở dữ liệu MySQL
 require_once '../config/config.php';
-
 $conn = getDbConnection();
 
-// 3. XỬ LÝ API AJAX (Ghi nhận lô thuốc sau khi đã có tx_hash từ Blockchain)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_lo_thuoc') {
+// 3. XỬ LÝ API AJAX (Lưu mới HOẶC Cập nhật lô thuốc sau khi ký Blockchain thành công)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
-    try {
-        $id_thuoc = $_POST['id_thuoc'];
-        $ma_lo = $_POST['ma_lo'];
-        $ma_tra_cuu = $_POST['ma_tra_cuu'];
-        $tx_hash = $_POST['tx_hash'];
-        $id_cty_dang_ky = $_POST['id_cty_dang_ky'];
-        $id_cty_san_xuat = $_POST['id_cty_san_xuat'];
-        $ngay_san_xuat = $_POST['ngay_san_xuat'];
-        $han_su_dung = $_POST['han_su_dung'];
-        $so_luong_ton = $_POST['so_luong_ton'];
-        $gia_nhap = $_POST['gia_nhap'];
-        $ma_admin = $_SESSION['ma_admin'] ?? 1; // Lấy ID admin từ session
 
-        $insert_query = "INSERT INTO LoThuoc (id_thuoc, ma_lo, ma_tra_cuu, tx_hash, trang_thai_blockchain, ma_admin, id_cty_dang_ky, id_cty_san_xuat, ngay_san_xuat, han_su_dung, so_luong_ton, gia_nhap) 
-                         VALUES (?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($insert_query);
-        $stmt->execute([$id_thuoc, $ma_lo, $ma_tra_cuu, $tx_hash, $ma_admin, $id_cty_dang_ky, $id_cty_san_xuat, $ngay_san_xuat, $han_su_dung, $so_luong_ton, $gia_nhap]);
+    if ($_POST['action'] === 'save_lo_thuoc') {
+        try {
+            $id_thuoc = $_POST['id_thuoc'];
+            $ma_lo = $_POST['ma_lo'];
+            $ma_tra_cuu = $_POST['ma_tra_cuu'];
+            $tx_hash = $_POST['tx_hash'];
+            $id_cty_dang_ky = $_POST['id_cty_dang_ky'];
+            $id_cty_san_xuat = $_POST['id_cty_san_xuat'];
+            $ngay_san_xuat = $_POST['ngay_san_xuat'];
+            $han_su_dung = $_POST['han_su_dung'];
+            $so_luong_ton = $_POST['so_luong_ton'];
+            $gia_nhap = $_POST['gia_nhap'];
+            $ma_admin = $_SESSION['ma_admin'] ?? 1;
 
-        echo json_encode(['success' => true, 'message' => 'Lưu lô thuốc lên hệ thống và Blockchain thành công!']);
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => 'Lỗi MySQL Backend: ' . $e->getMessage()]);
+            $insert_query = "INSERT INTO LoThuoc (id_thuoc, ma_lo, ma_tra_cuu, tx_hash, trang_thai_blockchain, ma_admin, id_cty_dang_ky, id_cty_san_xuat, ngay_san_xuat, han_su_dung, so_luong_ton, gia_nhap) 
+                             VALUES (?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($insert_query);
+            $stmt->execute([$id_thuoc, $ma_lo, $ma_tra_cuu, $tx_hash, $ma_admin, $id_cty_dang_ky, $id_cty_san_xuat, $ngay_san_xuat, $han_su_dung, $so_luong_ton, $gia_nhap]);
+
+            echo json_encode(['success' => true, 'message' => 'Lưu lô thuốc lên hệ thống và Blockchain thành công!']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Lỗi MySQL Backend: ' . $e->getMessage()]);
+        }
+        exit();
+    } else if ($_POST['action'] === 'update_lo_thuoc') {
+        try {
+            $id_thuoc = $_POST['id_thuoc'];
+            $ma_lo = $_POST['ma_lo'];
+            $ma_tra_cuu = $_POST['ma_tra_cuu'];
+            $tx_hash = $_POST['tx_hash'];
+            $id_cty_dang_ky = $_POST['id_cty_dang_ky'];
+            $id_cty_san_xuat = $_POST['id_cty_san_xuat'];
+            $ngay_san_xuat = $_POST['ngay_san_xuat'];
+            $han_su_dung = $_POST['han_su_dung'];
+            $so_luong_ton = $_POST['so_luong_ton'];
+            $gia_nhap = $_POST['gia_nhap'];
+
+            $update_query = "UPDATE LoThuoc 
+                             SET id_thuoc = ?, ma_lo = ?, tx_hash = ?, id_cty_dang_ky = ?, id_cty_san_xuat = ?, ngay_san_xuat = ?, han_su_dung = ?, so_luong_ton = ?, gia_nhap = ? 
+                             WHERE ma_tra_cuu = ?";
+            $stmt = $conn->prepare($update_query);
+            $stmt->execute([$id_thuoc, $ma_lo, $tx_hash, $id_cty_dang_ky, $id_cty_san_xuat, $ngay_san_xuat, $han_su_dung, $so_luong_ton, $gia_nhap, $ma_tra_cuu]);
+
+            echo json_encode(['success' => true, 'message' => 'Cập nhật lô thuốc và đồng bộ Blockchain thành công!']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Lỗi MySQL Backend: ' . $e->getMessage()]);
+        }
+        exit();
     }
-    exit();
 }
 
-// 4. ĐỌC DỮ LIỆU ĐỂ HIỂN THỊ LÊN GIAO DIỆN
+// 4. XỬ LÝ LỌC, TÌM KIẾM VÀ PHÂN TRANG
+$search = trim($_GET['s'] ?? '');
+$filter_thuoc = trim($_GET['id_thuoc'] ?? '');
+$filter_status = trim($_GET['status'] ?? '');
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$limit = 10; // Số bản ghi trên mỗi trang
+$offset = ($page - 1) * $limit;
+
+// Dựng câu lệnh WHERE linh hoạt
+$where_clauses = ["1=1"];
+$params = [];
+
+if ($search !== '') {
+    $where_clauses[] = "(l.ma_lo LIKE ? OR l.ma_tra_cuu LIKE ? OR t.ten_thuoc LIKE ? OR l.tx_hash LIKE ?)";
+    $searchTerm = "%$search%";
+    $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+}
+
+if ($filter_thuoc !== '') {
+    $where_clauses[] = "l.id_thuoc = ?";
+    $params[] = $filter_thuoc;
+}
+
+if ($filter_status !== '') {
+    $where_clauses[] = "l.trang_thai_blockchain = ?";
+    $params[] = $filter_status;
+}
+
+$where_sql = implode(" AND ", $where_clauses);
+
 try {
-    // Lấy danh sách lô thuốc kèm tên thuốc tương ứng
-    $lo_stmt = $conn->prepare("SELECT l.*, t.ten_thuoc FROM LoThuoc l JOIN Thuoc t ON l.id_thuoc = t.id_thuoc ORDER BY l.ngay_nhap_kho DESC");
-    $lo_stmt->execute();
+    // Đếm tổng số lượng bản ghi để phân trang
+    $count_stmt = $conn->prepare("SELECT COUNT(*) FROM LoThuoc l JOIN Thuoc t ON l.id_thuoc = t.id_thuoc WHERE $where_sql");
+    $count_stmt->execute($params);
+    $total_records = $count_stmt->fetchColumn();
+    $total_pages = ceil($total_records / $limit);
+
+    // Truy vấn dữ liệu có phân trang (LIMIT & OFFSET)
+    $sql = "SELECT l.*, t.ten_thuoc 
+            FROM LoThuoc l 
+            JOIN Thuoc t ON l.id_thuoc = t.id_thuoc 
+            WHERE $where_sql 
+            ORDER BY l.ngay_nhap_kho DESC 
+            LIMIT $limit OFFSET $offset";
+    $lo_stmt = $conn->prepare($sql);
+    $lo_stmt->execute($params);
     $lo_thuoc_list = $lo_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Lấy danh sách thuốc đang hoạt động để làm dropdown chọn trong Modal
+    // Lấy dữ liệu danh mục thuốc cho dropdown lọc & modal
     $thuoc_stmt = $conn->prepare("SELECT id_thuoc, ten_thuoc FROM Thuoc WHERE trang_thai = 1");
     $thuoc_stmt->execute();
     $thuoc_options = $thuoc_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Lấy danh sách doanh nghiệp đối tác (Đăng ký / Sản xuất)
+    // Lấy danh sách doanh nghiệp
     $dn_stmt = $conn->prepare("SELECT id_doanh_nghiep, ten_doanh_nghiep, loai_hinh FROM DoanhNghiep");
     $dn_stmt->execute();
     $doanh_nghiep_list = $dn_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -69,13 +136,8 @@ try {
     <title>PharmaChain — Quản lý lô thuốc</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Thư viện biểu tượng Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Thư viện Ethers.js để tương tác với mạng Blockchain và MetaMask -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-
     <style>
-        /* Bê nguyên hệ thống CSS gốc từ file cũ */
         :root {
             --green-900: #0f3d24;
             --green-700: #137a4a;
@@ -87,7 +149,6 @@ try {
             --red-600: #d5362f;
             --red-700: #b5271f;
             --red-50: #fdeceb;
-            --red-100: #fbdad8;
             --blue-600: #2b5fd9;
             --blue-50: #eef4ff;
             --gray-900: #1c2430;
@@ -103,8 +164,6 @@ try {
             --side-text: #aab3c5;
             --side-active: #232b38;
             --radius-lg: 18px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
             --shadow-card: 0 1px 2px rgba(20, 30, 50, .04), 0 8px 24px -12px rgba(20, 30, 50, .10);
             --shadow-modal: 0 20px 60px -12px rgba(15, 30, 25, .35);
         }
@@ -123,7 +182,6 @@ try {
             font-family: 'Inter', system-ui, sans-serif;
             background: var(--gray-50);
             color: var(--gray-900);
-            -webkit-font-smoothing: antialiased;
         }
 
         a {
@@ -171,21 +229,17 @@ try {
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
         }
 
         .brand-name {
             font-weight: 800;
             font-size: 15.5px;
             color: #fff;
-            letter-spacing: -.2px;
-            line-height: 1.1;
         }
 
         .brand-sub {
             font-size: 11px;
             color: #7c869a;
-            margin-top: 2px;
         }
 
         .nav-group {
@@ -203,7 +257,6 @@ try {
             padding: 14px 12px 6px;
         }
 
-        /* Giữ nguyên cấu trúc padding gốc, loại bỏ hộp 40px theo yêu cầu */
         .nav-item {
             display: flex;
             align-items: center;
@@ -211,17 +264,7 @@ try {
             padding: 10.5px 12px;
             border-radius: 10px;
             font-size: 13.8px;
-            font-weight: 500;
             color: var(--side-text);
-            position: relative;
-            transition: .15s;
-        }
-
-        .nav-item i {
-            width: 17px;
-            text-align: center;
-            flex-shrink: 0;
-            opacity: .85;
         }
 
         .nav-item:hover {
@@ -235,22 +278,6 @@ try {
             font-weight: 600;
         }
 
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: -14px;
-            top: 8px;
-            bottom: 8px;
-            width: 4px;
-            border-radius: 0 4px 4px 0;
-            background: var(--green-600);
-        }
-
-        .nav-item.active i {
-            opacity: 1;
-            color: var(--green-600);
-        }
-
         .logout-link {
             display: flex;
             align-items: center;
@@ -260,10 +287,6 @@ try {
             padding: 8px 12px;
             margin-top: auto;
             border-radius: 8px;
-        }
-
-        .logout-link:hover {
-            background: rgba(213, 54, 47, .1);
         }
 
         .main {
@@ -277,7 +300,6 @@ try {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
             padding: 20px 32px;
             background: var(--white);
             border-bottom: 1px solid var(--gray-200);
@@ -301,17 +323,11 @@ try {
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .page-heading .icon-wrap i {
-            font-size: 18px;
         }
 
         .page-title {
             font-size: 19.5px;
             font-weight: 800;
-            letter-spacing: -.3px;
         }
 
         .content {
@@ -321,6 +337,7 @@ try {
             margin: 0 auto;
         }
 
+        /* Toolbar & Filters */
         .toolbar-card {
             background: var(--white);
             border: 1px solid var(--gray-200);
@@ -330,11 +347,34 @@ try {
             margin-bottom: 18px;
         }
 
-        .toolbar {
+        .filter-form {
             display: flex;
             flex-wrap: wrap;
+            gap: 12px;
             align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
             gap: 10px;
+            align-items: center;
+            flex: 1;
+        }
+
+        .form-input {
+            border: 1px solid var(--gray-300);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 13.5px;
+            outline: none;
+            background: #fff;
+        }
+
+        .form-input:focus {
+            border-color: var(--green-600);
         }
 
         .btn {
@@ -344,20 +384,28 @@ try {
             font-size: 13.5px;
             font-weight: 600;
             border-radius: 10px;
-            padding: 9.5px 16px;
+            padding: 9px 16px;
             border: 1px solid transparent;
-            white-space: nowrap;
             transition: .15s;
         }
 
         .btn-primary {
             background: var(--green-700);
             color: #fff;
-            box-shadow: 0 4px 10px -4px rgba(19, 122, 74, .6);
         }
 
         .btn-primary:hover {
             background: var(--green-900);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border-color: var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
         }
 
         .btn-ghost {
@@ -366,8 +414,28 @@ try {
             color: var(--gray-700);
         }
 
-        .btn-ghost:hover {
-            background: var(--gray-100);
+        .btn-edit {
+            background: var(--blue-50);
+            color: var(--blue-600);
+            border: 1px solid rgba(43, 95, 217, .2);
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .btn-copy {
+            background: transparent;
+            border: none;
+            color: var(--gray-500);
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: .15s;
+        }
+
+        .btn-copy:hover {
+            color: var(--green-700);
+            background: var(--green-50);
         }
 
         .table-card {
@@ -385,7 +453,7 @@ try {
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1020px;
+            min-width: 1100px;
         }
 
         thead th {
@@ -427,9 +495,19 @@ try {
             background: currentColor;
         }
 
-        .badge-active {
+        .badge-confirmed {
             background: var(--green-50);
             color: var(--green-700);
+        }
+
+        .badge-pending {
+            background: var(--orange-50);
+            color: var(--orange-600);
+        }
+
+        .badge-failed {
+            background: var(--red-50);
+            color: var(--red-600);
         }
 
         .btn-wallet {
@@ -443,7 +521,6 @@ try {
             background: var(--white);
             border: 1px solid var(--green-700);
             color: var(--green-700);
-            transition: .15s;
         }
 
         .btn-wallet.connected {
@@ -452,24 +529,45 @@ try {
             background: var(--blue-50);
         }
 
-        .icon-brand {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #fff;
-            border-radius: 9px;
-            transform: rotate(-45deg);
-            position: relative;
+        /* Pagination CSS */
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-top: 1px solid var(--gray-200);
+            background: var(--white);
         }
 
-        .icon-brand::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background-color: #fff;
-            transform: translateY(-50%);
+        .pagination {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            border-radius: 8px;
+            border: 1px solid var(--gray-300);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .page-link.active {
+            background: var(--green-700);
+            color: #fff;
+            border-color: var(--green-700);
+        }
+
+        .page-link.disabled {
+            opacity: .4;
+            pointer-events: none;
         }
 
         .modal-overlay {
@@ -489,7 +587,6 @@ try {
             display: none;
         }
 
-        /* Tăng nhẹ chiều rộng lên 860px để hiển thị hệ 3 cột thông thoáng, cân đối */
         .modal-box {
             background: var(--white);
             border-radius: 22px;
@@ -538,7 +635,6 @@ try {
             background: var(--gray-50);
         }
 
-        /* PHƯƠNG ÁN B: Thay thế grid 2 cột cũ bằng hệ 3 cột (3 cột x 3 hàng = 9 ô vừa khít hoàn hảo) */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -567,10 +663,10 @@ try {
             width: 100%;
         }
 
-        .form-field input:focus,
-        .form-field select:focus {
-            border-color: var(--green-600);
-            box-shadow: 0 0 0 3px var(--green-50);
+        .form-field input:disabled {
+            background-color: var(--gray-100);
+            color: var(--gray-500);
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -578,12 +674,10 @@ try {
 <body>
 
     <div class="app">
-        <!-- ===== SIDEBAR ===== -->
+        <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="brand">
-                <div class="brand-logo">
-                    <div class="icon icon-brand"></div>
-                </div>
+                <div class="brand-logo"><i class="fa-solid fa-pills" style="color:#fff;"></i></div>
                 <div>
                     <div class="brand-name">PharmaChain</div>
                     <div class="brand-sub">Hệ thống quản trị</div>
@@ -598,7 +692,7 @@ try {
             <a class="logout-link" href="../logout.php"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
         </aside>
 
-        <!-- ===== MAIN CONTENT ===== -->
+        <!-- MAIN CONTENT -->
         <main class="main">
             <header class="topbar">
                 <div class="page-heading">
@@ -613,15 +707,46 @@ try {
             </header>
 
             <section class="content">
+                <!-- THANH TÌM KIẾM & BỘ LỌC -->
                 <div class="toolbar-card">
-                    <div class="toolbar">
-                        <div style="font-size: 14px; color: var(--gray-500);">Dữ liệu đồng bộ sổ cái phi tập trung</div>
-                        <button class="btn btn-primary" onclick="openModal()" style="margin-left: auto;">
+                    <form method="GET" action="quanLyLoThuoc.php" class="filter-form">
+                        <div class="filter-group">
+                            <!-- Ô Tìm Kiếm Từ Khóa -->
+                            <input type="text" name="s" class="form-input" style="min-width: 220px;"
+                                placeholder="Tìm Mã lô, Mã QR, TxHash..."
+                                value="<?php echo htmlspecialchars($search); ?>">
+
+                            <!-- Lọc Theo Tên Thuốc -->
+                            <select name="id_thuoc" class="form-input">
+                                <option value="">-- Tất cả loại thuốc --</option>
+                                <?php foreach ($thuoc_options as $t): ?>
+                                    <option value="<?php echo $t['id_thuoc']; ?>" <?php echo $filter_thuoc == $t['id_thuoc'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($t['ten_thuoc']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+
+                            <!-- Lọc Theo Trạng Thái Blockchain -->
+                            <select name="status" class="form-input">
+                                <option value="">-- Tất cả trạng thái --</option>
+                                <option value="confirmed" <?php echo $filter_status === 'confirmed' ? 'selected' : ''; ?>>Đã xác thực (Confirmed)</option>
+                                <option value="pending" <?php echo $filter_status === 'pending' ? 'selected' : ''; ?>>Đang xử lý (Pending)</option>
+                                <option value="failed" <?php echo $filter_status === 'failed' ? 'selected' : ''; ?>>Thất bại (Failed)</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-filter"></i> Lọc</button>
+                            <?php if (!empty($search) || !empty($filter_thuoc) || !empty($filter_status)): ?>
+                                <a href="quanLyLoThuoc.php" class="btn btn-ghost"><i class="fa-solid fa-rotate-left"></i> Xóa lọc</a>
+                            <?php endif; ?>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" onclick="openCreateModal()">
                             <i class="fa-solid fa-plus"></i> Phát hành lô thuốc mới
                         </button>
-                    </div>
+                    </form>
                 </div>
 
+                <!-- BẢNG DANH SÁCH LÔ THUỐC -->
                 <div class="table-card">
                     <div class="table-scroll">
                         <table>
@@ -634,65 +759,111 @@ try {
                                     <th>Hạn Sử Dụng</th>
                                     <th>Số Lượng Tồn</th>
                                     <th>Trạng Thái Chuỗi</th>
-                                    <th>Mã Giao Dịch Blockchain (TxHash)</th>
+                                    <th>Mã Giao Dịch (TxHash)</th>
+                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($lo_thuoc_list as $lo): ?>
+                                <?php if (empty($lo_thuoc_list)): ?>
                                     <tr>
-                                        <td class="cell-strong">
-                                            <?php echo htmlspecialchars($lo['ma_lo']); ?>
-                                        </td>
-                                        <td class="cell-strong" style="color: var(--green-700);">
-                                            <?php echo htmlspecialchars($lo['ten_thuoc']); ?>
-                                        </td>
-                                        <td class="cell-strong" style="font-family: monospace;">
-                                            <?php echo htmlspecialchars($lo['ma_tra_cuu']); ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $lo['ngay_san_xuat']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo $lo['han_su_dung']; ?>
-                                        </td>
-                                        <td>
-                                            <?php echo number_format($lo['so_luong_ton']); ?>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-active">Đã xác thực</span>
-                                        </td>
-                                        <td style="font-family: monospace; font-size: 11.5px; color: var(--gray-500);"
-                                            title="<?php echo $lo['tx_hash']; ?>">
-                                            <?php echo substr($lo['tx_hash'], 0, 10) . '...' . substr($lo['tx_hash'], -8); ?>
+                                        <td colspan="9" style="text-align: center; color: var(--gray-500); padding: 30px;">
+                                            Khồng tìm thấy dữ liệu lô thuốc phù hợp!
                                         </td>
                                     </tr>
-                                <?php endforeach; ?>
+                                <?php else: ?>
+                                    <?php foreach ($lo_thuoc_list as $lo): ?>
+                                        <tr>
+                                            <td class="cell-strong"><?php echo htmlspecialchars($lo['ma_lo']); ?></td>
+                                            <td class="cell-strong" style="color: var(--green-700);"><?php echo htmlspecialchars($lo['ten_thuoc']); ?></td>
+                                            <td class="cell-strong" style="font-family: monospace;"><?php echo htmlspecialchars($lo['ma_tra_cuu']); ?></td>
+                                            <td><?php echo $lo['ngay_san_xuat']; ?></td>
+                                            <td><?php echo $lo['han_su_dung']; ?></td>
+                                            <td><?php echo number_format($lo['so_luong_ton']); ?></td>
+                                            <td>
+                                                <?php
+                                                $st = $lo['trang_thai_blockchain'];
+                                                if ($st === 'confirmed') echo '<span class="badge badge-confirmed">Đã xác thực</span>';
+                                                else if ($st === 'pending') echo '<span class="badge badge-pending">Đang xử lý</span>';
+                                                else echo '<span class="badge badge-failed">Thất bại</span>';
+                                                ?>
+                                            </td>
+                                            <td style="font-family: monospace; font-size: 11.5px; color: var(--gray-500);">
+                                                <?php if (!empty($lo['tx_hash'])): ?>
+                                                    <span title="<?php echo htmlspecialchars($lo['tx_hash']); ?>">
+                                                        <?php echo substr($lo['tx_hash'], 0, 8) . '...' . substr($lo['tx_hash'], -6); ?>
+                                                    </span>
+                                                    <!-- NÚT COPY NHANH MÃ HASH -->
+                                                    <button class="btn-copy" onclick="copyToClipboard('<?php echo htmlspecialchars($lo['tx_hash']); ?>')" title="Copy mã TxHash đầy đủ">
+                                                        <i class="fa-regular fa-copy"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <span style="color: var(--gray-300);">Chưa có</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-edit" onclick='openEditModal(<?php echo json_encode($lo); ?>)'>
+                                                    <i class="fa-solid fa-pen-to-square"></i> Sửa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- PHÂN TRANG -->
+                    <?php if ($total_pages > 1): ?>
+                        <div class="pagination-container">
+                            <div style="font-size: 13px; color: var(--gray-500);">
+                                Hiển thị <?php echo count($lo_thuoc_list); ?> / <?php echo $total_records; ?> lô thuốc
+                            </div>
+                            <div class="pagination">
+                                <!-- Nút Trước -->
+                                <a href="?page=<?php echo $page - 1; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
+                                    class="page-link <?php echo $page <= 1 ? 'disabled' : ''; ?>">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </a>
+
+                                <!-- Các con số trang -->
+                                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                    <a href="?page=<?php echo $i; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
+                                        class="page-link <?php echo $page == $i ? 'active' : ''; ?>">
+                                        <?php echo $i; ?>
+                                    </a>
+                                <?php endfor; ?>
+
+                                <!-- Nút Sau -->
+                                <a href="?page=<?php echo $page + 1; ?>&s=<?php echo urlencode($search); ?>&id_thuoc=<?php echo $filter_thuoc; ?>&status=<?php echo $filter_status; ?>"
+                                    class="page-link <?php echo $page >= $total_pages ? 'disabled' : ''; ?>">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- ===== MODAL PHÁT HÀNH LÔ THUỐC LÊN BLOCKCHAIN ===== -->
+    <!-- MODAL FORM PHÁT HÀNH / CHỈNH SỬA -->
     <div class="modal-overlay hidden" id="modalForm">
         <div class="modal-box">
             <div class="modal-head">
-                <h2>Phát hành lô thuốc mới lên Sổ cái Blockchain</h2>
+                <h2 id="modalTitle">Phát hành lô thuốc mới lên Sổ cái Blockchain</h2>
                 <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <form id="loThuocForm">
+                    <input type="hidden" id="form_mode" value="create">
+
                     <div class="form-grid">
                         <div class="form-field">
                             <label>Chọn loại thuốc sản xuất <span style="color:red;">*</span></label>
                             <select id="id_thuoc" required>
                                 <option value="">-- Chọn thuốc --</option>
                                 <?php foreach ($thuoc_options as $t): ?>
-                                    <option value="<?php echo $t['id_thuoc']; ?>">
-                                        <?php echo htmlspecialchars($t['ten_thuoc']); ?>
-                                    </option>
+                                    <option value="<?php echo $t['id_thuoc']; ?>"><?php echo htmlspecialchars($t['ten_thuoc']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -714,9 +885,7 @@ try {
                                 <option value="">-- Chọn đơn vị --</option>
                                 <?php foreach ($doanh_nghiep_list as $dn): ?>
                                     <?php if ($dn['loai_hinh'] === 'DangKy' || $dn['loai_hinh'] === 'CaHai'): ?>
-                                        <option value="<?php echo $dn['id_doanh_nghiep']; ?>">
-                                            <?php echo htmlspecialchars($dn['ten_doanh_nghiep']); ?>
-                                        </option>
+                                        <option value="<?php echo $dn['id_doanh_nghiep']; ?>"><?php echo htmlspecialchars($dn['ten_doanh_nghiep']); ?></option>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             </select>
@@ -727,9 +896,7 @@ try {
                                 <option value="">-- Chọn nhà máy --</option>
                                 <?php foreach ($doanh_nghiep_list as $dn): ?>
                                     <?php if ($dn['loai_hinh'] === 'SanXuat' || $dn['loai_hinh'] === 'CaHai'): ?>
-                                        <option value="<?php echo $dn['id_doanh_nghiep']; ?>">
-                                            <?php echo htmlspecialchars($dn['ten_doanh_nghiep']); ?>
-                                        </option>
+                                        <option value="<?php echo $dn['id_doanh_nghiep']; ?>"><?php echo htmlspecialchars($dn['ten_doanh_nghiep']); ?></option>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             </select>
@@ -758,49 +925,47 @@ try {
         </div>
     </div>
 
-    <!-- Nhúng thư viện Ethers.js -->
+    <!-- JS TƯƠNG TÁC BLOCKCHAIN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="../js/blockchain-tracker.js"></script>
-    
+
     <script>
-        const CONTRACT_ADDRESS = "0xe0FCdDCd026C179A638953a50fE900D68d903F4a"; 
-        const CONTRACT_ABI = [
-            "function registerLot(string _maLo, string _maTraCuu, uint256 _idThuoc, uint256 _sl) public returns (bytes32)"
-        ];
-
-        let userAddress = null;
-
-        window.addEventListener('load', async () => {
-            if (window.ethereum) {
-                const accounts = await window.ethereum.request({
-                    method: 'eth_accounts'
-                });
-                if (accounts.length > 0) handleWalletConnected(accounts[0]);
-            }
-        });
-
-        async function connectWallet() {
-            if (window.ethereum) {
-                try {
-                    const accounts = await window.ethereum.request({
-                        method: 'eth_requestAccounts'
-                    });
-                    handleWalletConnected(accounts[0]);
-                } catch (error) {
-                    alert("Kết nối ví thất bại!");
-                }
-            } else {
-                alert("Vui lòng cài đặt tiện ích MetaMask!");
-            }
+        // HÀM COPY MÃ TXHASH VÀO CLIPBOARD
+        function copyToClipboard(text) {
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Đã sao chép mã TxHash vào bộ nhớ tạm:\n" + text);
+            }).catch(err => {
+                console.error("Lỗi khi sao chép:", err);
+            });
         }
 
-        function handleWalletConnected(address) {
-            userAddress = address;
-            document.getElementById('walletAddressText').innerText = address.substring(0, 6) + "..." + address.substring(address.length - 4);
-            document.getElementById('connectWalletBtn').classList.add('connected');
+        function openCreateModal() {
+            document.getElementById('form_mode').value = 'create';
+            document.getElementById('modalTitle').innerText = 'Phát hành lô thuốc mới lên Sổ cái Blockchain';
+            document.getElementById('loThuocForm').reset();
+
+            const maTraCuuInput = document.getElementById('ma_tra_cuu');
+            maTraCuuInput.disabled = false;
+            document.getElementById('modalForm').classList.remove('hidden');
         }
 
-        function openModal() {
+        function openEditModal(lo) {
+            document.getElementById('form_mode').value = 'edit';
+            document.getElementById('modalTitle').innerText = 'Chỉnh sửa lô thuốc & Cập nhật Blockchain';
+
+            document.getElementById('id_thuoc').value = lo.id_thuoc;
+            document.getElementById('ma_lo').value = lo.ma_lo;
+            document.getElementById('ma_tra_cuu').value = lo.ma_tra_cuu;
+            document.getElementById('gia_nhap').value = lo.gia_nhap;
+            document.getElementById('id_cty_dang_ky').value = lo.id_cty_dang_ky;
+            document.getElementById('id_cty_san_xuat').value = lo.id_cty_san_xuat;
+            document.getElementById('ngay_san_xuat').value = lo.ngay_san_xuat;
+            document.getElementById('han_su_dung').value = lo.han_su_dung;
+            document.getElementById('so_luong_ton').value = lo.so_luong_ton;
+
+            const maTraCuuInput = document.getElementById('ma_tra_cuu');
+            maTraCuuInput.disabled = true;
             document.getElementById('modalForm').classList.remove('hidden');
         }
 
@@ -810,10 +975,11 @@ try {
 
         async function publishToBlockchain() {
             if (!userAddress) {
-                alert("Bạn cần phải kết nối ví MetaMask trước khi phát hành lên chuỗi dữ liệu!");
+                alert("Bạn cần phải kết nối ví MetaMask trước!");
                 return;
             }
 
+            const mode = document.getElementById('form_mode').value;
             const id_thuoc = document.getElementById('id_thuoc').value;
             const ma_lo = document.getElementById('ma_lo').value;
             const ma_tra_cuu = document.getElementById('ma_tra_cuu').value;
@@ -824,29 +990,29 @@ try {
             const so_luong_ton = document.getElementById('so_luong_ton').value;
             const gia_nhap = document.getElementById('gia_nhap').value;
 
-            if (!id_thuoc || !ma_lo || !ma_tra_cuu || !ngay_san_xuat || !han_su_dung || !so_luong_ton || !gia_nhap) {
+            if (!id_thuoc || !ma_lo || !ma_tra_cuu || !id_cty_dang_ky || !id_cty_san_xuat || !ngay_san_xuat || !han_su_dung || !so_luong_ton || !gia_nhap) {
                 alert("Vui lòng nhập đầy đủ tất cả các trường dữ liệu!");
                 return;
             }
 
             try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const signer = provider.getSigner();
-                const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                alert("Hệ thống chuẩn bị gọi MetaMask ký duyệt, vui lòng xác nhận giao dịch trên cửa sổ ví...");
 
-                alert("Hệ thống chuẩn bị gọi MetaMask ký duyệt giao dịch, vui lòng xác nhận trên cửa sổ ví...");
+                let txHash;
+                if (mode === 'create') {
+                    txHash = await registerBatchOnBlockchain(ma_tra_cuu, ma_lo, id_thuoc, id_cty_dang_ky, id_cty_san_xuat, han_su_dung);
+                } else {
+                    txHash = await updateBatchOnBlockchain(ma_tra_cuu, ma_lo, id_thuoc, id_cty_dang_ky, id_cty_san_xuat, han_su_dung);
+                }
 
-                const tx = await contract.registerLot(ma_lo, ma_tra_cuu, id_thuoc, so_luong_ton);
-                alert("Giao dịch đang được đẩy lên khối chuỗi. Vui lòng đợi trong giây lát... TxHash: " + tx.hash);
-
-                await tx.wait();
+                alert("Giao dịch Blockchain thành công!\nTxHash mới: " + txHash + "\nĐang đồng bộ thông tin vào MySQL...");
 
                 const formData = new FormData();
-                formData.append('action', 'save_lo_thuoc');
+                formData.append('action', mode === 'create' ? 'save_lo_thuoc' : 'update_lo_thuoc');
                 formData.append('id_thuoc', id_thuoc);
                 formData.append('ma_lo', ma_lo);
                 formData.append('ma_tra_cuu', ma_tra_cuu);
-                formData.append('tx_hash', tx.hash); 
+                formData.append('tx_hash', txHash);
                 formData.append('id_cty_dang_ky', id_cty_dang_ky);
                 formData.append('id_cty_san_xuat', id_cty_san_xuat);
                 formData.append('ngay_san_xuat', ngay_san_xuat);
@@ -862,16 +1028,17 @@ try {
 
                 if (result.success) {
                     alert(result.message);
-                    window.location.reload(); 
+                    window.location.reload();
                 } else {
                     alert("Lỗi khi lưu vào MySQL: " + result.message);
                 }
 
             } catch (error) {
                 console.error(error);
-                alert("Xảy ra lỗi trong quá trình ký duyệt giao dịch Blockchain!");
+                alert("Lỗi giao dịch: " + (error.reason || error.message || "Từ chối ký duyệt!"));
             }
         }
     </script>
 </body>
+
 </html>

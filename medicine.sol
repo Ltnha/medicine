@@ -88,4 +88,22 @@ contract DrugTracker {
         Batch memory b = batches[_maTraCuu];
         return (b.maLo, b.idThuoc, b.idCtyDangKy, b.idCtySanXuat, b.hanSuDung, b.isCompromised);
     }
+
+    function updateBatch(
+        string memory _maTraCuu,
+        string memory _maLo,
+        uint256 _idThuoc,
+        uint256 _idCtyDangKy,
+        uint256 _idCtySanXuat,
+        uint256 _hanSuDung
+    ) public onlyAdmin {
+        require(batches[_maTraCuu].isExist, "Loi: Ma tra cuu khong ton tai!");
+
+        // Cập nhật lại thông tin mới trên Blockchain
+        batches[_maTraCuu].maLo = _maLo;
+        batches[_maTraCuu].idThuoc = _idThuoc;
+        batches[_maTraCuu].idCtyDangKy = _idCtyDangKy;
+        batches[_maTraCuu].idCtySanXuat = _idCtySanXuat;
+        batches[_maTraCuu].hanSuDung = _hanSuDung;
+    }
 }

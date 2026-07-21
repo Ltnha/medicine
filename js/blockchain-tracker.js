@@ -1,7 +1,23 @@
-// CẤU HÌNH THÔNG SỐ CONTRACT BẠN ĐÃ DEPLOY TRÊN REMIX
-const contractAddress = "0x64235DB5203F9F062Bb36FbF889c0AE33f077886"; //địa chỉ contract
-const contractABI = [
-    [
+// js/blockchain-tracker.js
+
+// 1. CẤU HÌNH CONTRACT
+const CONTRACT_ADDRESS = "0x16FFaD3183B23D06111852c170a3c8Fd952F4A9e"; //thay đổi khi deploy contract mới
+
+// ABI dạng mảng 1 lớp chuẩn
+const CONTRACT_ABI =[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_admin",
+				"type": "address"
+			}
+		],
+		"name": "addAdmin",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -54,12 +70,93 @@ const contractABI = [
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "_admin",
-				"type": "address"
+				"internalType": "string",
+				"name": "_maTraCuu",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_maLo",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idThuoc",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idCtyDangKy",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idCtySanXuat",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_hanSuDung",
+				"type": "uint256"
 			}
 		],
-		"name": "addAdmin",
+		"name": "registerBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_maTraCuu",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_maLo",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idThuoc",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idCtyDangKy",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_idCtySanXuat",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_hanSuDung",
+				"type": "uint256"
+			}
+		],
+		"name": "updateBatch",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_maTraCuu",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "_isCompromised",
+				"type": "bool"
+			}
+		],
+		"name": "updateBatchStatus",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -139,137 +236,108 @@ const contractABI = [
 		],
 		"stateMutability": "view",
 		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_maTraCuu",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_maLo",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idThuoc",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtyDangKy",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_idCtySanXuat",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_hanSuDung",
-				"type": "uint256"
-			}
-		],
-		"name": "registerBatch",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_maTraCuu",
-				"type": "string"
-			},
-			{
-				"internalType": "bool",
-				"name": "_isCompromised",
-				"type": "bool"
-			}
-		],
-		"name": "updateBatchStatus",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	}
-]
 ];
 
 let provider;
 let signer;
 let contract;
+let userAddress = null;
 
-// Hàm khởi tạo kết nối ví MetaMask và Contract ở phía trình duyệt
+// 2. KHỞI TẠO KẾT NỐI VÍ METAMASK
 async function initBlockchain() {
     if (typeof window.ethereum !== 'undefined') {
         try {
-            // Cú pháp Ethers.js v6 dành cho Browser
             provider = new ethers.BrowserProvider(window.ethereum);
             signer = await provider.getSigner();
-            contract = new ethers.Contract(contractAddress, contractABI, signer);
-            console.log("Frontend kết nối Blockchain thành công!");
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+            console.log("Kết nối Blockchain thành công!");
+            return true;
         } catch (error) {
-            console.error("Người dùng từ chối kết nối ví hoặc có lỗi:", error);
+            console.error("Lỗi kết nối ví:", error);
+            return false;
         }
     } else {
-        console.warn("Không tìm thấy MetaMask!");
+        alert("Vui lòng cài đặt tiện ích MetaMask!");
+        return false;
     }
 }
 
-// Tự động kết nối khi trình duyệt tải xong trang
-window.addEventListener('load', initBlockchain);
+// 3. HÀM NÚT BẤM KẾT NỐI VÍ
+async function connectWallet() {
+    if (window.ethereum) {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            if (accounts.length > 0) {
+                userAddress = accounts[0];
+                handleWalletConnected(userAddress);
+                await initBlockchain();
+            }
+        } catch (error) {
+            alert("Kết nối ví thất bại!");
+        }
+    } else {
+        alert("Vui lòng cài đặt tiện ích MetaMask!");
+    }
+}
 
-// Hàm gọi MetaMask để ký và lưu lô thuốc lên Blockchain
+function handleWalletConnected(address) {
+    userAddress = address;
+    const btnText = document.getElementById('walletAddressText');
+    const btn = document.getElementById('connectWalletBtn');
+    if (btnText) btnText.innerText = address.substring(0, 6) + "..." + address.substring(address.length - 4);
+    if (btn) btn.classList.add('connected');
+}
+
+// Tự động nhận diện nếu ví đã kết nối từ trước
+window.addEventListener('load', async () => {
+    if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+            handleWalletConnected(accounts[0]);
+            await initBlockchain();
+        }
+    }
+});
+
+// 4. HÀM ĐĂNG KÝ LÔ THUỐC LÊN BLOCKCHAIN
 async function registerBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung) {
-    try {
-        if (!contract) await initBlockchain();
-
-        // Đổi ngày sang định dạng số Timestamp để khớp với cấu hình Solidity
-        const timestampHSD = Math.floor(new Date(hanSuDung).getTime() / 1000);
-
-        // Kích hoạt MetaMask gọi hàm registerBatch trong Smart Contract
-        const tx = await contract.registerBatch(
-            maTraCuu,
-            maLo,
-            Number(idThuoc),
-            Number(idCtyDangKy),
-            Number(idCtySanXuat),
-            timestampHSD
-        );
-
-        console.log("Đang xử lý giao dịch... Tx Hash:", tx.hash);
-        
-        // Chờ Blockchain xác nhận giao dịch thành công (Găm vào Block)
-        await tx.wait();
-        console.log("Giao dịch đã được xác nhận thành công!");
-        
-        return tx.hash; // Trả về tx_hash để đẩy tiếp vào MySQL bằng PHP
-    } catch (error) {
-        console.error("Lỗi khi tương tác với Blockchain:", error);
-        throw error;
+    if (!contract) {
+        const ok = await initBlockchain();
+        if (!ok) throw new Error("Chưa kết nối được Smart Contract!");
     }
+
+    const timestampHSD = Math.floor(new Date(hanSuDung).getTime() / 1000);
+
+    // Kích hoạt MetaMask gọi hàm registerBatch
+    const tx = await contract.registerBatch(
+        maTraCuu,
+        maLo,
+        Number(idThuoc),
+        Number(idCtyDangKy),
+        Number(idCtySanXuat),
+        timestampHSD
+    );
+
+    console.log("Đang xử lý... Tx Hash:", tx.hash);
+    await tx.wait(); // Đợi găm vào Block
+    return tx.hash;
 }
+// chỉnh sửa
+async function updateBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung) {
+    if (!contract) await initBlockchain();
+    const timestampHSD = Math.floor(new Date(hanSuDung).getTime() / 1000);
 
-// Hàm đọc dữ liệu công khai từ Blockchain (Không tốn gas)
-async function getBatchFromBlockchain(maTraCuu) {
-    try {
-        if (!contract) await initBlockchain();
+    // Ký giao dịch sửa trên MetaMask
+    const tx = await contract.updateBatch(
+        maTraCuu,
+        maLo,
+        Number(idThuoc),
+        Number(idCtyDangKy),
+        Number(idCtySanXuat),
+        timestampHSD
+    );
 
-        const data = await contract.getBatch(maTraCuu);
-        return {
-            maLo: data[0],
-            idThuoc: Number(data[1]),
-            idCtyDangKy: Number(data[2]),
-            idCtySanXuat: Number(data[3]),
-            hanSuDung: new Date(Number(data[4]) * 1000).toLocaleDateString('vi-VN'),
-            isCompromised: data[5]
-        };
-    } catch (error) {
-        console.error("Không tìm thấy dữ liệu cho mã tra cứu:", maTraCuu);
-        return null;
-    }
+    await tx.wait(); // Chờ Blockchain xác nhận
+    return tx.hash;  // Trả về mã tx_hash MỚI
 }
