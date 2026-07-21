@@ -151,3 +151,11 @@ INSERT INTO LoThuoc (id_thuoc, ma_lo, ma_tra_cuu, ma_admin, id_cty_dang_ky, id_c
 (23, 'LO-2026-018', 'QR-HONGOC-018', 1, 1, 2, '2026-01-26', '2029-04-22', 171, 61752, 'safe'),
 (24, 'LO-2026-019', 'QR-HONGOC-019', 1, 1, 2, '2026-05-11', '2028-04-11', 6, 79506, 'safe'),
 (25, 'LO-2026-020', 'QR-HONGOC-020', 1, 1, 2, '2026-01-12', '2028-11-14', 151, 72568, 'safe');
+
+-- UPDATE LoThuoc 
+-- SET han_su_dung = '2029-12-21' 
+-- WHERE ma_lo = 'LO1-2026-10' AND han_su_dung = '2028-12-21';
+
+-- UPDATE LoThuoc 
+-- SET id_cty_san_xuat = 2 
+-- WHERE ma_lo = 'LO1-2026-10';

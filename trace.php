@@ -265,6 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 idThuoc: <?= intval($thong_tin_lo['id_thuoc']) ?>,
                 idCtyDangKy: <?= intval($thong_tin_lo['id_cty_dang_ky']) ?>,
                 idCtySanXuat: <?= intval($thong_tin_lo['id_cty_san_xuat']) ?>,
+                ngaySanXuat: "<?= $thong_tin_lo['ngay_san_xuat'] ?>",
                 hanSuDung: "<?= $thong_tin_lo['han_su_dung'] ?>"
             };
 
@@ -324,6 +325,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     mysqlData.idThuoc,
                     mysqlData.idCtyDangKy,
                     mysqlData.idCtySanXuat,
+                    mysqlData.ngaySanXuat,
                     mysqlData.hanSuDung
                 );
 

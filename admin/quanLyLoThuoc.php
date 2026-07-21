@@ -463,7 +463,7 @@ try {
                 alert("Hệ thống chuẩn bị gọi MetaMask ký duyệt, vui lòng xác nhận giao dịch trên cửa sổ ví...");
 
                 // Gọi hàm gửi mã Băm dữ liệu lên Blockchain
-                const txHash = await registerBatchOnBlockchain(ma_tra_cuu, ma_lo, id_thuoc, id_cty_dang_ky, id_cty_san_xuat, han_su_dung);
+                const txHash = await registerBatchOnBlockchain(ma_tra_cuu, ma_lo, id_thuoc, id_cty_dang_ky, id_cty_san_xuat, ngay_san_xuat, han_su_dung);
 
                 alert("Giao dịch Blockchain thành công!\nTxHash: " + txHash + "\nĐang đồng bộ thông tin vào MySQL...");
 

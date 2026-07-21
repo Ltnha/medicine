@@ -1,7 +1,7 @@
 // js/blockchain-tracker.js
 
 // 1. CẤU HÌNH CONTRACT
-const CONTRACT_ADDRESS = "0xd3575806964f88DF19B07f59aF06b7b6011454C7"; //thay đổi khi deploy contract mới
+const CONTRACT_ADDRESS = "0x6d3c7bC9b3Ab6a29C4876BDa8571B52E356aB17C"; //thay đổi khi deploy contract mới
 
 // ABI dạng mảng 1 lớp chuẩn
 const CONTRACT_ABI =[
@@ -220,20 +220,20 @@ window.addEventListener('load', async () => {
  * HÀM TẠO MÃ HASH CHUẨN TỪ DỮ LIỆU
  * Quy tắc gộp chuỗi: maLo|idThuoc|idCtyDangKy|idCtySanXuat|hanSuDung
  */
-function calculateBatchHash(maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung) {
-    const rawString = `${maLo}|${idThuoc}|${idCtyDangKy}|${idCtySanXuat}|${hanSuDung}`;
+function calculateBatchHash(maLo, idThuoc, idCtyDangKy, idCtySanXuat, ngaySanXuat, hanSuDung) {
+    const rawString = `${maLo}|${idThuoc}|${idCtyDangKy}|${idCtySanXuat}|${ngaySanXuat}|${hanSuDung}`;
     return ethers.solidityPackedKeccak256(["string"], [rawString]);
 }
 
 // 4. HÀM ĐĂNG KÝ LÔ THUỐC LÊN BLOCKCHAIN
-async function registerBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung) {
+async function registerBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, idCtySanXuat, ngaySanXuat, hanSuDung) {
     if (!contract) {
         const ok = await initBlockchain();
         if (!ok) throw new Error("Chưa kết nối được Smart Contract!");
     }
 
     // 1. Tạo mã Hash từ dữ liệu nhập vào
-    const dataHash = calculateBatchHash(maLo, idThuoc, idCtyDangKy, idCtySanXuat, hanSuDung);
+    const dataHash = calculateBatchHash(maLo, idThuoc, idCtyDangKy, idCtySanXuat, ngaySanXuat, hanSuDung);
     console.log("Chuỗi Hash được tạo ra:", dataHash);
 
     // 2. Kích hoạt MetaMask gọi hàm registerBatch với dataHash
