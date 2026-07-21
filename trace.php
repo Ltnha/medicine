@@ -4,7 +4,8 @@ require_once 'config/config.php';
 $conn = getDbConnection();
 
 // 2. HÀM LẤY ĐỊA CHỈ IP CHUẨN XÁC
-function getClientIP() {
+function getClientIP()
+{
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         return $_SERVER['HTTP_CLIENT_IP'];
     }
@@ -24,7 +25,7 @@ $thong_tin_lo = null;
 $error_message = '';
 
 if (!empty($ma_tra_cuu)) {
-    
+
     // 3.1. TRUY VẤN THÔNG TIN LÔ THUỐC TỪ CSDL PHARMACHAIN
     try {
         $sql = "SELECT 
@@ -38,12 +39,11 @@ if (!empty($ma_tra_cuu)) {
                 INNER JOIN DoanhNghiep dn_dk ON l.id_cty_dang_ky = dn_dk.id_doanh_nghiep
                 INNER JOIN DoanhNghiep dn_sx ON l.id_cty_san_xuat = dn_sx.id_doanh_nghiep
                 WHERE l.ma_tra_cuu = ?";
-                
+
         $stmt = $conn->prepare($sql);
         $stmt->execute([$ma_tra_cuu]);
         $thong_tin_lo = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Xác định trạng thái tra cứu
         $trang_thai_quet = $thong_tin_lo ? 'thanh_cong' : 'that_bai';
 
         if (!$thong_tin_lo) {
@@ -54,12 +54,11 @@ if (!empty($ma_tra_cuu)) {
         $error_message = "Có lỗi xảy ra trong quá trình truy vấn dữ liệu.";
     }
 
-    // 3.2. LƯU LỊCH SỬ QUÉT (LƯU CẢ THÀNH CÔNG LẪN THẤT BẠI)
+    // 3.2. LƯU LỊCH SỬ QUÉT
     $ip_nguoi_quet = getClientIP();
     $thiet_bi = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
 
     try {
-        // Lưu lịch sử kèm trạng thái quét (thanh_cong / that_bai)
         $sql_log = "INSERT INTO LichSuQuet (ma_tra_cuu, ip_nguoi_quet, thiet_bi, trang_thai) VALUES (?, ?, ?, ?)";
         $stmt_log = $conn->prepare($sql_log);
         $stmt_log->execute([$ma_tra_cuu, $ip_nguoi_quet, $thiet_bi, $trang_thai_quet]);
@@ -71,6 +70,7 @@ if (!empty($ma_tra_cuu)) {
 
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -84,6 +84,7 @@ if (!empty($ma_tra_cuu)) {
         }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col justify-between">
 
     <header class="bg-white shadow-sm border-b border-emerald-100">
@@ -110,19 +111,19 @@ if (!empty($ma_tra_cuu)) {
     </header>
 
     <main class="max-w-2xl mx-auto px-4 py-8 flex-grow w-full">
-        
+
         <!-- FORM TÌM KIẾM TRUY XUẤT -->
         <div class="bg-white rounded-2xl shadow-md p-6 mb-6 border border-emerald-50">
             <h2 class="text-xl font-bold text-gray-800 text-center mb-2">Kiểm Tra Nguồn Gốc Thuốc</h2>
             <p class="text-sm text-gray-500 text-center mb-6">Quét mã QR trên vỏ hộp hoặc nhập mã tra cứu để kiểm tra thông tin xuất xứ.</p>
-            
+
             <form action="trace.php" method="GET" class="space-y-4">
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-barcode text-gray-400"></i>
                     </div>
                     <input type="text" name="qr" value="<?= htmlspecialchars($ma_tra_cuu) ?>" placeholder="Nhập mã tra cứu (VD: QR-HONGOC-001)..." required
-                           class="block w-full pl-10 pr-12 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 shadow-sm transition">
+                        class="block w-full pl-10 pr-12 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900 shadow-sm transition">
                     <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-emerald-600 hover:text-emerald-700" title="Quét mã QR">
                         <i class="fa-solid fa-qrcode text-xl"></i>
                     </button>
@@ -146,15 +147,22 @@ if (!empty($ma_tra_cuu)) {
         <!-- KẾT QUẢ TRUY XUẤT NGUỒN GỐC THUỐC -->
         <?php if ($thong_tin_lo): ?>
             <div id="result-container" class="space-y-6">
-                
+
                 <!-- THÔNG TIN CHI TIẾT SẢN PHẨM -->
                 <div class="bg-white rounded-2xl shadow-md p-6 border border-emerald-50 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-xl font-medium">
-                        <i class="fa-solid fa-circle-check mr-1"></i> Sản phẩm chính hãng
+
+                    <div id="auth-badge" class="absolute top-0 right-0 bg-gray-400 text-white text-xs px-3 py-1 rounded-bl-xl font-medium">
+                        <i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang xác thực với Blockchain...
                     </div>
 
                     <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">Thông Tin Sản Phẩm</h3>
-                    
+
+                    <!-- CẢNH BÁO NẾU DỮ LIỆU BỊ SỬA TRÁI PHÉP -->
+                    <div id="tamper-alert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4 text-xs font-semibold">
+                        <i class="fa-solid fa-circle-xmark text-lg mr-2 inline-block align-middle"></i>
+                        <span>CẢNH BÁO GIẢ MẠO: Dữ liệu Mã lô hoặc Hạn sử dụng trong CSDL không khớp với Sổ cái Blockchain bất biến!</span>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p class="text-gray-400">Tên thuốc:</p>
@@ -204,7 +212,7 @@ if (!empty($ma_tra_cuu)) {
                 <!-- LỊCH SỬ / HÀNH TRÌNH CHUỖI CUNG ỨNG -->
                 <div class="bg-white rounded-2xl shadow-md p-6 border border-emerald-50">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">Hành Trình Chuỗi Cung Ứng</h3>
-                    
+
                     <div class="relative border-l-2 border-emerald-100 ml-3 space-y-6 pb-2">
                         <div class="relative pl-6">
                             <div class="absolute -left-[9px] top-1.5 bg-emerald-600 h-4 w-4 rounded-full border-4 border-white"></div>
@@ -236,5 +244,106 @@ if (!empty($ma_tra_cuu)) {
         <p class="text-center text-xs text-gray-400">© 2026 PharmaChain. Ứng dụng quản lý chuỗi cung ứng dược phẩm trên Blockchain.</p>
     </footer>
 
+    <!--THƯ VIỆN CẦN THIẾT ĐỂ KẾT NỐI VÀ ĐỐI CHIẾU BLOCKCHAIN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <script src="js/blockchain-tracker.js"></script>
+
+    <?php if ($thong_tin_lo): ?>
+        <script>
+            const mysqlData = {
+                maTraCuu: "<?= htmlspecialchars($thong_tin_lo['ma_tra_cuu']) ?>",
+                maLo: "<?= htmlspecialchars($thong_tin_lo['ma_lo']) ?>",
+                idThuoc: <?= intval($thong_tin_lo['id_thuoc']) ?>,
+                hanSuDung: "<?= $thong_tin_lo['han_su_dung'] ?>"
+            };
+
+            // Danh sách RPC public tốc độ cao cho mạng Sepolia
+            const SEPOLIA_RPC_LIST = [
+                "https://rpc.ankr.com/eth_sepolia",
+                "https://ethereum-sepolia-rpc.publicnode.com",
+                "https://1rpc.io/sepolia",
+                "https://sepolia.gateway.tenderly.co"
+            ];
+
+            async function verifyBlockchain() {
+                const badge = document.getElementById('auth-badge');
+                const alertBox = document.getElementById('tamper-alert');
+
+                let onChainData = null;
+                let isNotExistError = false;
+
+                // Thử lần lượt qua các cổng RPC cho tới khi đọc thành công
+                for (const rpcUrl of SEPOLIA_RPC_LIST) {
+                    try {
+                        const provider = new ethers.JsonRpcProvider(rpcUrl);
+                        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+
+                        onChainData = await contract.getBatch(mysqlData.maTraCuu);
+                        if (onChainData) break; // Lấy dữ liệu thành công -> Thoát vòng lặp
+                    } catch (err) {
+                        const fullErrText = String(err.message || '') + String(err.reason || '') + JSON.stringify(err);
+
+                        // Nếu lỗi do Smart Contract phản hồi "Ma tra cuu khong ton tai"
+                        if (fullErrText.includes("Ma tra cuu khong ton tai") || fullErrText.includes("execution reverted")) {
+                            isNotExistError = true;
+                            break; // Dữ liệu không có trên chuỗi -> Dừng kiểm tra
+                        }
+                    }
+                }
+
+                // Trường hợp 1: Mã QR chưa từng được phát hành lên Blockchain
+                if (isNotExistError) {
+                    badge.className = "absolute top-0 right-0 bg-red-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
+                    badge.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Mã QR chưa găm trên Blockchain!';
+                    return;
+                }
+
+                // Trường hợp 2: Lấy dữ liệu từ Blockchain thành công -> Tiến hành so sánh
+                if (onChainData) {
+                    try {
+                        const chainMaLo = onChainData[0];
+                        const chainIdThuoc = Number(onChainData[1]);
+                        const chainHSDTimestamp = Number(onChainData[4]) * 1000;
+                        const isCompromised = onChainData[5];
+
+                        // Đổi timestamp sang YYYY-MM-DD
+                        const d = new Date(chainHSDTimestamp);
+                        const chainHSDDate = d.getFullYear() + '-' +
+                            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                            String(d.getDate()).padStart(2, '0');
+
+                        // So sánh MySQL vs Blockchain
+                        const isMaLoMatched = (mysqlData.maLo === chainMaLo);
+                        const isHSDMatched = (mysqlData.hanSuDung === chainHSDDate);
+                        const isIdThuocMatched = (mysqlData.idThuoc === chainIdThuoc);
+
+                        if (isCompromised) {
+                            badge.className = "absolute top-0 right-0 bg-red-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
+                            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Lô thuốc bị thu hồi!';
+                        } else if (isMaLoMatched && isHSDMatched && isIdThuocMatched) {
+                            // ✅ KHỚP DỮ LIỆU
+                            badge.className = "absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
+                            badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> Sản phẩm chính hãng (Khớp Blockchain)';
+                        } else {
+                            // ❌ DỮ LIỆU CSDL BỊ CAN THIỆP
+                            badge.className = "absolute top-0 right-0 bg-amber-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
+                            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Dữ liệu bị thay đổi!';
+                            if (alertBox) alertBox.classList.remove('hidden');
+                        }
+                    } catch (e) {
+                        console.error("Lỗi parse:", e);
+                    }
+                } else {
+                    // Trường hợp 3: Mất mạng hoặc sai địa chỉ Contract
+                    badge.className = "absolute top-0 right-0 bg-gray-500 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
+                    badge.innerHTML = '<i class="fa-solid fa-circle-question mr-1"></i> Không thể kết nối Blockchain';
+                }
+            }
+
+            window.addEventListener('load', verifyBlockchain);
+        </script>
+    <?php endif; ?>
+
 </body>
+
 </html>
