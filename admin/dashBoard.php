@@ -14,13 +14,13 @@ require_once '../config/config.php';
 $conn = getDbConnection(); 
 
 try {
-    // Truy vấn lấy danh sách lịch sử tra cứu mới nhất
-    $query = "SELECT * FROM LichSuTraCuu ORDER BY thoi_gian DESC LIMIT 50";
+    // Truy vấn lấy toàn bộ danh sách lịch sử quét mới nhất từ bảng LichSuQuet
+    $query = "SELECT * FROM LichSuQuet ORDER BY thoi_gian_quet DESC LIMIT 50";
     $stmt = $conn->prepare($query);
     $stmt->execute();
     $lich_su = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $lich_su = []; // Nếu chưa tạo bảng hoặc lỗi, tạm thời gán mảng rỗng
+    $lich_su = []; // Nếu có lỗi truy vấn, gán mảng rỗng
 }
 ?>
 <!DOCTYPE html>
@@ -32,7 +32,7 @@ try {
     <title>PharmaChain — Tổng quan hệ thống</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Tích hợp thư viện Font Awesome theo yêu cầu -->
+    <!-- Tích hợp thư viện Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -360,23 +360,16 @@ try {
             background: currentColor;
         }
 
-        .badge-success {
+        .badge-active {
             background: var(--green-50);
             color: var(--green-700);
         }
 
-        .badge-fail {
+        .badge-lowstock {
             background: var(--red-50);
             color: var(--red-600);
         }
 
-        .empty-state {
-            padding: 60px 20px;
-            text-align: center;
-            color: var(--gray-500);
-        }
-
-        /* Thêm style nút ví kết nối Metamask dựa theo hệ thống CSS có sẵn */
         .btn-wallet {
             display: inline-flex;
             align-items: center;
@@ -401,13 +394,13 @@ try {
             background: var(--blue-50);
         }
 
-        /* Đèn logo viên thuốc chéo gốc */
         .icon-brand {
             width: 18px;
             height: 18px;
             border: 2px solid #fff;
             border-radius: 9px;
             transform: rotate(-45deg);
+            position: relative;
         }
 
         .icon-brand::after {
@@ -433,7 +426,6 @@ try {
                     <div class="icon icon-brand"></div>
                 </div>
                 <div>
-                    <!-- Đổi tên thương hiệu sang PharmaChain -->
                     <div class="brand-name">PharmaChain</div>
                     <div class="brand-sub">Hệ thống quản trị</div>
                 </div>
@@ -441,7 +433,6 @@ try {
 
             <nav class="nav-group">
                 <div class="nav-label">Điều hướng</div>
-                <!-- Tổng quan hiện tại đang active -->
                 <a class="nav-item active" href="dashBoard.php">
                     <i class="fa-solid fa-chart-pie"></i>
                     Tổng quan
@@ -472,7 +463,6 @@ try {
                     <div class="page-title">Tổng quan hệ thống</div>
                 </div>
 
-                <!-- Nút kết nối ví Metamask được nhúng trực tiếp vào Header bên phải -->
                 <div>
                     <button id="connectWalletBtn" onclick="connectWallet()" class="btn-wallet">
                         <i class="fa-solid fa-wallet"></i>
@@ -482,70 +472,45 @@ try {
             </header>
 
             <section class="content">
-                <!-- TIÊU ĐỀ KHU VỰC BẢNG SỐ LIỆU -->
                 <div style="margin-bottom: 20px;">
                     <h3 style="margin: 0; font-size: 16px; font-weight: 700;">Nhật ký giám sát truy xuất nguồn gốc</h3>
                     <p style="margin: 4px 0 0; font-size: 12.5px; color: var(--gray-500);">Theo dõi các lượt quét mã QR
                         ẩn danh từ người tiêu dùng trên thực tế</p>
                 </div>
 
-                <!-- BẢNG LỊCH SỬ TRA CỨU ĐỌC TỪ MYSQL -->
+                <!-- BẢNG ĐỌC TRỰC TIẾP TỪ BẢNG LichSuQuet -->
                 <div class="table-card">
                     <div class="table-scroll">
                         <table>
                             <thead>
                                 <tr>
                                     <th>ID Bản ghi</th>
-                                    <th>Mã tra cứu (Mã QR)</th>
-                                    <th>Thời gian hệ thống</th>
+                                    <th>Mã tra cứu</th>
+                                    <th>Thời gian quét</th>
                                     <th>Địa chỉ IP người quét</th>
+                                    <th>Thiết bị</th>
                                     <th style="text-align:right;">Trạng thái truy vấn</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody">
-                                <?php if (!empty($lich_su)): ?>
                                 <?php foreach ($lich_su as $row): ?>
                                 <tr>
-                                    <td class="cell-strong" style="color: var(--gray-500);">#
-                                        <?php echo $row['id_lich_su']; ?>
-                                    </td>
-                                    <td class="cell-strong">
-                                        <?php echo htmlspecialchars($row['ma_tra_cuu']); ?>
-                                    </td>
-                                    <td>
-                                        <?php echo $row['thoi_gian']; ?>
-                                    </td>
-                                    <td style="font-family: monospace; color: var(--gray-700);">
-                                        <?php echo $row['ip_nguoi_dung']; ?>
+                                    <td class="cell-strong" style="color: var(--gray-500);">#<?php echo $row['id_lich_su']; ?></td>
+                                    <td class="cell-strong"><?php echo $row['ma_tra_cuu']; ?></td>
+                                    <td><?php echo $row['thoi_gian_quet']; ?></td>
+                                    <td style="font-family: monospace; color: var(--gray-700);"><?php echo $row['ip_nguoi_quet']; ?></td>
+                                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo $row['thiet_bi']; ?>">
+                                        <?php echo $row['thiet_bi'] ? $row['thiet_bi'] : 'Không rõ'; ?>
                                     </td>
                                     <td style="text-align:right;">
-                                        <?php if ($row['trang_thai_tra_cuu'] === 'Thành công'): ?>
-                                        <span class="badge badge-active">Thành công</span>
+                                        <?php if ($row['trang_thai'] === 'thanh_cong'): ?>
+                                            <span class="badge badge-active">Thành công</span>
                                         <?php else: ?>
-                                        <span class="badge badge-lowstock">Mã không tồn tại</span>
+                                            <span class="badge badge-lowstock">Thất bại</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
-                                <?php else: ?>
-                                <!-- Dữ liệu mẫu ban đầu để Admin hình dung cấu trúc bảng nếu database trống -->
-                                <tr>
-                                    <td class="cell-strong" style="color: var(--gray-500);">#1</td>
-                                    <td class="cell-strong">QR-HONGOC-001</td>
-                                    <td>2026-07-20 16:40:12</td>
-                                    <td style="font-family: monospace; color: var(--gray-700);">113.161.45.22</td>
-                                    <td style="text-align:right;"><span class="badge badge-active">Thành công</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="cell-strong" style="color: var(--gray-500);">#2</td>
-                                    <td class="cell-strong">QR-UNKNOWN-ERROR</td>
-                                    <td>2026-07-20 16:35:01</td>
-                                    <td style="font-family: monospace; color: var(--gray-700);">14.232.122.89</td>
-                                    <td style="text-align:right;"><span class="badge badge-lowstock">Mã không tồn
-                                            tại</span></td>
-                                </tr>
-                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -556,7 +521,6 @@ try {
 
     <!-- ===== MÃ JAVASCRIPT KẾT NỐI VÍ METAMASK ===== -->
     <script>
-        // Kiểm tra trạng thái ví sẵn có khi Admin tải/f5 lại trang
         window.addEventListener('load', async () => {
             if (window.ethereum) {
                 try {
@@ -570,7 +534,6 @@ try {
             }
         });
 
-        // Hàm gọi mở Metamask để ký kết nối chuỗi
         async function connectWallet() {
             if (typeof window.ethereum !== 'undefined') {
                 try {
@@ -585,16 +548,14 @@ try {
             }
         }
 
-        // Xử lý đổi giao diện nút bấm sau khi kết nối ví thành công
         function handleWalletConnected(address) {
             const btn = document.getElementById('connectWalletBtn');
             const text = document.getElementById('walletAddressText');
 
-            // Cắt ngắn chuỗi địa chỉ ví hiển thị (Ví dụ: 0xe0FC...3F4a)
             const shortAddress = address.substring(0, 6) + "..." + address.substring(address.length - 4);
 
             text.innerText = shortAddress;
-            btn.classList.add('connected'); // Thay đổi tông màu nút sang dạng đã kích hoạt
+            btn.classList.add('connected');
         }
     </script>
 </body>
