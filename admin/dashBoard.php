@@ -1,17 +1,17 @@
 <?php
 session_start();
 
-// 1. Kiểm tra bảo mật Session phân quyền đăng nhập của Admin
+// Kiểm tra bảo mật Session phân quyền đăng nhập của Admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     // Nếu chưa đăng nhập hoặc không phải admin, chuyển hướng về trang login ở thư mục gốc
     header('Location: ../login.php');
     exit();
 }
 
-// 2. Kết nối cơ sở dữ liệu MySQL
-require_once '../config/config.php'; 
+// Kết nối cơ sở dữ liệu MySQL
+require_once '../config/config.php';
 
-$conn = getDbConnection(); 
+$conn = getDbConnection();
 
 try {
     // Truy vấn lấy toàn bộ danh sách lịch sử quét mới nhất từ bảng LichSuQuet
@@ -32,7 +32,7 @@ try {
     <title>PharmaChain — Tổng quan hệ thống</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Tích hợp thư viện Font Awesome -->
+    <!-- thư viện Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -494,22 +494,22 @@ try {
                             </thead>
                             <tbody id="tableBody">
                                 <?php foreach ($lich_su as $row): ?>
-                                <tr>
-                                    <td class="cell-strong" style="color: var(--gray-500);">#<?php echo $row['id_lich_su']; ?></td>
-                                    <td class="cell-strong"><?php echo $row['ma_tra_cuu']; ?></td>
-                                    <td><?php echo $row['thoi_gian_quet']; ?></td>
-                                    <td style="font-family: monospace; color: var(--gray-700);"><?php echo $row['ip_nguoi_quet']; ?></td>
-                                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo $row['thiet_bi']; ?>">
-                                        <?php echo $row['thiet_bi'] ? $row['thiet_bi'] : 'Không rõ'; ?>
-                                    </td>
-                                    <td style="text-align:right;">
-                                        <?php if ($row['trang_thai'] === 'thanh_cong'): ?>
-                                            <span class="badge badge-active">Thành công</span>
-                                        <?php else: ?>
-                                            <span class="badge badge-lowstock">Thất bại</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td class="cell-strong" style="color: var(--gray-500);">#<?php echo $row['id_lich_su']; ?></td>
+                                        <td class="cell-strong"><?php echo $row['ma_tra_cuu']; ?></td>
+                                        <td><?php echo $row['thoi_gian_quet']; ?></td>
+                                        <td style="font-family: monospace; color: var(--gray-700);"><?php echo $row['ip_nguoi_quet']; ?></td>
+                                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo $row['thiet_bi']; ?>">
+                                            <?php echo $row['thiet_bi'] ? $row['thiet_bi'] : 'Không rõ'; ?>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <?php if ($row['trang_thai'] === 'thanh_cong'): ?>
+                                                <span class="badge badge-active">Thành công</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-lowstock">Thất bại</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
@@ -519,12 +519,14 @@ try {
         </main>
     </div>
 
-    <!-- ===== MÃ JAVASCRIPT KẾT NỐI VÍ METAMASK ===== -->
+    <!-- MÃ JAVASCRIPT KẾT NỐI VÍ METAMASK -->
     <script>
         window.addEventListener('load', async () => {
             if (window.ethereum) {
                 try {
-                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_accounts'
+                    });
                     if (accounts.length > 0) {
                         handleWalletConnected(accounts[0]);
                     }
@@ -537,7 +539,9 @@ try {
         async function connectWallet() {
             if (typeof window.ethereum !== 'undefined') {
                 try {
-                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
                     handleWalletConnected(accounts[0]);
                 } catch (error) {
                     alert("Bạn đã hủy yêu cầu kết nối ví MetaMask.");

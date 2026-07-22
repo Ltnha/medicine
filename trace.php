@@ -93,7 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0fdf4; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0fdf4;
+        }
     </style>
 </head>
 
@@ -311,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     }
                 }
 
-                // 1. Trường hợp không tìm thấy trên Blockchain
+                // Trường hợp không tìm thấy trên Blockchain
                 if (isNotExistError) {
                     badge.className = "absolute top-0 right-0 bg-red-600 text-white text-xs px-3 py-1 rounded-bl-xl font-medium";
                     badge.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Mã QR chưa găm trên Blockchain!';
@@ -368,4 +371,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <?php endif; ?>
 
 </body>
+
 </html>

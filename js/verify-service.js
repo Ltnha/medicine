@@ -43,7 +43,7 @@ app.post('/verify-signature', (req, res) => {
             recoveredAddress
         });
     } catch (error) {
-        // Chữ ký sai định dạng, message bị hỏng, v.v.
+        // Chữ ký sai định dạng, message bị hỏng,
         console.error('Lỗi xác minh chữ ký:', error.message);
         return res.status(400).json({ valid: false, error: 'Chữ ký không hợp lệ hoặc bị lỗi định dạng!' });
     }

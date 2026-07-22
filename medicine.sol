@@ -3,14 +3,14 @@ pragma solidity ^0.8.0;
 
 contract DrugTracker {
     
-    // Cấu trúc lưu trữ siêu nhẹ: Chỉ lưu mã Hash và Trạng thái bảo mật
+    // Cấu trúc lưu trữ: Chỉ lưu mã Hash và Trạng thái bảo mật
     struct Batch {
         bytes32 dataHash;     // Mã băm Keccak-256 chứa toàn bộ dữ liệu lô thuốc
         bool isCompromised;   // false = an toàn, true = giả mạo / bị thu hồi
         bool isExist;         // Kiểm tra lô thuốc đã tồn tại trên chain chưa
     }
 
-    // Mapping từ mã tra cứu (QR) sang dữ liệu Băm
+    // Mapping từ mã tra cứu sang dữ liệu Băm
     mapping(string => Batch) private batches;
     
     address public owner;

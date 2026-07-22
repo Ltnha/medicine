@@ -2,7 +2,7 @@ let provider;
 let signer;
 let userAddress = "";
 
-// 1. Hàm kết nối ví
+// Hàm kết nối ví
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
         alert('Vui lòng cài đặt MetaMask hoặc ví Ethereum tương thích!');
@@ -27,12 +27,12 @@ async function connectWallet() {
     }
 }
 
-// 2. Hàm xử lý SIWE Đăng nhập — giờ gọi PHP thay vì gọi Node trực tiếp
+// Hàm xử lý SIWE Đăng nhập — giờ gọi PHP thay vì gọi Node trực tiếp
 async function handleSIWELogin() {
     if (!userAddress || !signer) return;
 
     try {
-        // BƯỚC 1: Lấy Nonce từ PHP (PHP tự lưu vào PHP session, cookie PHPSESSID)
+        // Lấy Nonce từ PHP (PHP tự lưu vào PHP session, cookie PHPSESSID)
         const nonceResponse = await fetch('nonce.php', {
             credentials: 'include'
         });
@@ -56,7 +56,7 @@ async function handleSIWELogin() {
         // Ký thông điệp qua ví
         const signature = await signer.signMessage(message);
 
-        // BƯỚC 2: Gửi cho PHP xử lý (PHP sẽ tự gọi Node để verify chữ ký ở phía server)
+        // Gửi cho PHP xử lý (PHP sẽ tự gọi Node để verify chữ ký ở phía server)
         const verifyResponse = await fetch('verify.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

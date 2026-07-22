@@ -1,7 +1,6 @@
-// js/blockchain-tracker.js
 
-// 1. CẤU HÌNH CONTRACT
-const CONTRACT_ADDRESS = "0x6d3c7bC9b3Ab6a29C4876BDa8571B52E356aB17C"; //thay đổi khi deploy contract mới
+// CẤU HÌNH CONTRACT
+const CONTRACT_ADDRESS = "0x35Bab4482a4247FF762fDb3b4aeffa4EbD31d1F9"; //thay đổi khi deploy contract mới
 
 // ABI dạng mảng 1 lớp chuẩn
 const CONTRACT_ABI =[
@@ -160,7 +159,7 @@ let signer;
 let contract;
 let userAddress = null;
 
-// 2. KHỞI TẠO KẾT NỐI VÍ METAMASK
+// KHỞI TẠO KẾT NỐI VÍ METAMASK
 async function initBlockchain() {
     if (typeof window.ethereum !== 'undefined') {
         try {
@@ -179,7 +178,7 @@ async function initBlockchain() {
     }
 }
 
-// 3. HÀM NÚT BẤM KẾT NỐI VÍ
+// HÀM NÚT BẤM KẾT NỐI VÍ
 async function connectWallet() {
     if (window.ethereum) {
         try {
@@ -216,16 +215,14 @@ window.addEventListener('load', async () => {
     }
 });
 
-/**
- * HÀM TẠO MÃ HASH CHUẨN TỪ DỮ LIỆU
- * Quy tắc gộp chuỗi: maLo|idThuoc|idCtyDangKy|idCtySanXuat|hanSuDung
- */
+ // HÀM TẠO MÃ HASH CHUẨN TỪ DỮ LIỆU
+ // Quy tắc gộp chuỗi: maLo|idThuoc|idCtyDangKy|idCtySanXuat|hanSuDung
 function calculateBatchHash(maLo, idThuoc, idCtyDangKy, idCtySanXuat, ngaySanXuat, hanSuDung) {
     const rawString = `${maLo}|${idThuoc}|${idCtyDangKy}|${idCtySanXuat}|${ngaySanXuat}|${hanSuDung}`;
     return ethers.solidityPackedKeccak256(["string"], [rawString]);
 }
 
-// 4. HÀM ĐĂNG KÝ LÔ THUỐC LÊN BLOCKCHAIN
+// HÀM ĐĂNG KÝ LÔ THUỐC LÊN BLOCKCHAIN
 async function registerBatchOnBlockchain(maTraCuu, maLo, idThuoc, idCtyDangKy, idCtySanXuat, ngaySanXuat, hanSuDung) {
     if (!contract) {
         const ok = await initBlockchain();
